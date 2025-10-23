@@ -1,0 +1,381 @@
+/* --- Global Reset and Basic Styling --- */
+html {
+    font-family: Poppins, Segoe UI, sans-serif;
+    font-size: 14pt;
+}
+
+header {
+    background-color: #e1433b;
+    padding: 5px;
+    font-size: 16pt;
+    text-align: center;
+    position: relative;
+}
+
+.header h1 {
+    color: black;
+    font-weight: bold;
+    margin: 0;
+}
+
+.profile-container {
+    position: absolute;
+    top: 40px;
+    right: 20px;
+}
+
+.profile-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.profile-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-menu {
+    display: none;
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background: #f5f5f5;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    width: 200px;
+    padding: 15px;
+    text-align: center;
+    z-index: 10;
+}
+
+.profile-menu.active {
+    display: block;
+}
+
+.menu-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.profile-menu .email {
+    background-color: #e53935;
+    color: white;
+    font-size: 12px;
+    border-radius: 6px;
+    padding: 3px 6px;
+    display: inline-block;
+}
+
+.logout-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+    text-decoration: none;
+    color: black;
+    font-weight: bold;
+}
+
+.logout-link span {
+    margin-right: 5px;
+}
+
+.logout-link:hover {
+    color: #e53935;
+}
+
+.logout {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: #ffffff;
+    color: rgb(0, 0, 0);
+    padding: 8px 12px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.navbar {
+    margin-top: 25px;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    gap: 20px;
+}
+
+.nav-links a {
+    color: #E9433A;
+    text-decoration: none;
+    margin: 15px;
+    font-weight: bold;
+}
+
+.nav-btn {
+    text-decoration: none;
+    color: #e53935;
+    background-color: white;
+    border: 1px solid #e53935;
+    border-radius: 10px;
+    padding: 10px 35px;
+    font-weight: bold;
+}
+
+.nav-btn.active {
+    background-color: #e53935;
+    color: white;
+}
+
+/* Body*/
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0; 
+    color: #333;
+}
+
+
+/* --- Navigation Section --- */
+.navbar {
+    background-color: #e53935;
+    padding: 0 20px 10px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 10px;
+}
+
+.nav-btn {
+    text-decoration: none;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.nav-btn.active {
+    background-color: white;
+    color: #e53935;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* --- Main Content Layout --- */
+main {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* --- Search Bar & Filter --- */
+.search-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.search-input {
+    flex-grow: 1;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    font-size: 16px;
+    background-color: #fff;
+}
+
+.filter-btn {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    padding: 0;
+}
+
+/* --- Report List Items (Accordion/Expandable Card) --- */
+.report-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.report-item {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    overflow: hidden; 
+}
+
+/* ส่วนที่มองเห็นได้เสมอ (Header ของ Card) */
+.report-header {
+    padding: 15px;
+    display: block;
+}
+
+.report-meta {
+    display: flex;
+    justify-content: flex-start;
+    gap: 15px;
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 5px;
+}
+
+.report-title {
+    font-size: 18px;
+    color: #333;
+    margin: 0 0 5px 0;
+}
+
+.report-status {
+    font-size: 14px;
+    color: #555;
+    margin: 0;
+}
+
+.status-checking {
+    color: #ffae00; 
+    font-weight: bold;
+}
+
+/* --- Expanded/Active State (เมื่อคลิก) --- */
+.report-item.active {
+    background-color: #ffae00; /* สีส้ม/เหลือง */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 0; 
+}
+
+.report-item.active .report-header {
+     color: #333;
+     font-weight: bold;
+     background-color: #ffae00; 
+     padding: 15px;
+     border-radius: 8px 8px 0 0;
+}
+
+.report-item.active .status-checking {
+     color: #333; 
+}
+
+/* --- Hidden Detail Content --- */
+.report-detail-content {
+    background-color: #fff; 
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    padding: 0 15px; 
+}
+
+.report-item.active .report-detail-content {
+    max-height: 500px; 
+    padding-bottom: 15px; 
+}
+
+/* --- Responsive Detail Styling (Flexbox + %) --- */
+
+/* Wrapper สำหรับจัดวางรูปภาพ (ซ้าย) และ ข้อมูล (ขวา) */
+.detail-info-wrapper {
+    display: flex;
+    gap: 5%;
+    align-items: flex-start;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+/* Container รูปภาพ: ใช้พื้นที่ 35% และรักษาสัดส่วน */
+.detail-image-container {
+    flex-basis: 35%; 
+    flex-shrink: 0; 
+    
+    /* เทคนิคการสร้างสี่เหลี่ยมจัตุรัสตามความกว้าง (Aspect Ratio) */
+    padding-top: 35%; 
+    position: relative; 
+    overflow: hidden;
+    margin: 0; 
+}
+
+.report-detail-image {
+    /* ทำให้ภาพครอบเต็ม Container ที่เป็น % */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+    
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+/* ส่วนข้อมูล: ใช้พื้นที่ที่เหลือทั้งหมด (60%) */
+.detail-text-block {
+    flex-grow: 1; 
+    flex-basis: 60%; 
+}
+
+/* รายละเอียดใน Text Block */
+.detail-meta {
+    font-size: 14px;
+    color: #555;
+    padding: 5px 0;
+}
+
+.detail-location, .detail-time {
+    margin: 0;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.detail-status-text {
+    font-size: 14px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.detail-description-box {
+    font-size: 14px;
+    color: #333;
+    line-height: 1.4;
+    padding: 5px 0;
+    margin-bottom: 15px;
+}
+
+/* ปุ่มการดำเนินการ */
+.detail-actions {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    padding-top: 10px;
+}
+
+.action-btn {
+    flex-grow: 1;
+    padding: 10px 5px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    color: #555;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+}

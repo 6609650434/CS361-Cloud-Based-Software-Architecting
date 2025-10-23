@@ -1,0 +1,136 @@
+html {
+    font-family: Poppins, Segoe UI, sans-serif;
+    font-size: 14pt;
+}
+
+header {
+    background-color: #e1433b;
+    padding: 5px;
+    font-size: 16pt;
+    text-align: center;
+    position: relative;
+}
+
+.header h1 {
+    color: black;
+    font-weight: bold;
+    margin: 0;
+}
+
+.profile-container {
+    position: absolute;
+    top: 40px;
+    right: 20px;
+}
+
+.profile-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.profile-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-menu {
+    display: none;
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background: #f5f5f5;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    width: 200px;
+    padding: 15px;
+    text-align: center;
+    z-index: 10;
+}
+
+.profile-menu.active {
+    display: block;
+}
+
+.menu-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.profile-menu .email {
+    background-color: #e53935;
+    color: white;
+    font-size: 12px;
+    border-radius: 6px;
+    padding: 3px 6px;
+    display: inline-block;
+}
+
+.logout-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+    text-decoration: none;
+    color: black;
+    font-weight: bold;
+}
+
+.logout-link span {
+    margin-right: 5px;
+}
+
+.logout-link:hover {
+    color: #e53935;
+}
+
+.logout {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: #ffffff;
+    color: rgb(0, 0, 0);
+    padding: 8px 12px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.navbar {
+    margin-top: 25px;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    gap: 20px;
+}
+
+.nav-links a {
+    color: #E9433A;
+    text-decoration: none;
+    margin: 15px;
+    font-weight: bold;
+}
+
+.nav-btn {
+    text-decoration: none;
+    color: #e53935;
+    background-color: white;
+    border: 1px solid #e53935;
+    border-radius: 10px;
+    padding: 10px 35px;
+    font-weight: bold;
+}
+
+.nav-btn.active {
+    background-color: #e53935;
+    color: white;
+}

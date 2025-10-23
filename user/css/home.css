@@ -1,0 +1,131 @@
+/* ปุ่ม + */
+.add-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  background-color: #e53935;
+  color: white;
+  font-size: 36px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  transition: transform 0.2s ease;
+  z-index: 100;
+}
+
+.add-btn:hover {
+  transform: scale(1.1);
+}
+
+/* popup พื้นหลัง */
+.popup {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  justify-content: flex-end;
+  align-items: flex-end;
+  z-index: 99;
+}
+
+.popup.active {
+  display: flex;
+}
+
+/* กล่อง popup */
+.popup-content {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  width: 380px;
+  max-width: 90%;
+  margin-right: 25px;
+  margin-bottom: 100px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  animation: slide-up 0.2s ease-out;
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ช่อง input */
+.popup-content h3 {
+  margin-top: 0;
+  color: #e53935;
+}
+
+.popup-content input,
+.popup-content textarea {
+  width: 100%;
+  margin: 8px 0;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* ปุ่มแนบรูป */
+.upload-section {
+  text-align: left;
+  margin: 15px 0;
+}
+
+.upload-label {
+  display: inline-block;
+  background: #f3f3f3;
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.upload-label:hover {
+  background: #e0e0e0;
+}
+
+.upload-label img {
+  width: 35px;
+  height: 35px;
+}
+
+#imageUpload {
+  display: none;
+}
+
+/* ปุ่มด้านล่าง */
+.popup-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.post-btn {
+  background: #e53935;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background: #777;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+}

@@ -3,11 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TU Emergency Alert</title>
+    <title>TU Emergency Alert - Admin Status</title>
     <link rel="stylesheet" href="../../css/style.css" />
-    <link rel="stylesheet" href="" />
+    <link rel="stylesheet" href="../css/adminStatus.css" />
   </head>
-  
+
   <body>
     <header>
       <h1>REPORT</h1>
@@ -26,8 +26,7 @@
             class="menu-avatar"
             alt="avatar"
           />
-
-          <a href="../login.html" class="logout-link"> Logout </a>
+          <a href="../../login.html" class="logout-link">Logout</a>
         </div>
       </div>
 
@@ -40,5 +39,12 @@
         <a href="admin-status.html" class="nav-btn active">STATUS</a>
       </div>
     </nav>
+
+    <main>
+      <h2>Reports Pending Review</h2>
+      <div id="statusList" class="status-list"></div>
+    </main>
+
+    <script src="../script/admin-status.js"></script>
   </body>
 </html>

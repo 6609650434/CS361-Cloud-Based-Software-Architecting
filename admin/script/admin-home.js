@@ -1,47 +1,51 @@
 document.addEventListener("DOMContentLoaded", () => {
   const adminReportList = document.getElementById("adminReportList");
-
-  // ดึงข้อมูลจาก localStorage
-  let adminReports = JSON.parse(localStorage.getItem("adminReports")) || [];
-  let userReports = JSON.parse(localStorage.getItem("userReports")) || [];
-
-  // แสดงรายงานทั้งหมด
-  adminReports.forEach((report, index) => {
-    const card = document.createElement("div");
-    card.className = "report-card";
-
-    card.innerHTML = `
-      <h3>${report.title}</h3>
-      <p><strong>Detail:</strong> ${report.detail}</p>
-      <p><strong>Status:</strong> <span class="status ${report.status.toLowerCase()}">${report.status}</span></p>
-      <div class="admin-actions">
-        <button class="approve-btn" data-index="${index}">Approve ✅</button>
-        <button class="reject-btn" data-index="${index}">Reject ❌</button>
-      </div>
-    `;
-
-    adminReportList.appendChild(card);
-  });
-
-  // เมื่อกดปุ่ม Approve / Reject
-  adminReportList.addEventListener("click", (e) => {
-    if (e.target.classList.contains("approve-btn") || e.target.classList.contains("reject-btn")) {
-      const index = e.target.getAttribute("data-index");
-      const newStatus = e.target.classList.contains("approve-btn") ? "Approved" : "Rejected";
-
-      // อัปเดตใน adminReports
-      adminReports[index].status = newStatus;
-      localStorage.setItem("adminReports", JSON.stringify(adminReports));
-
-      // อัปเดตใน userReports ให้ตรงกัน (อ้างจาก title)
-      const targetTitle = adminReports[index].title;
-      userReports = userReports.map((r) =>
-        r.title === targetTitle ? { ...r, status: newStatus } : r
-      );
-      localStorage.setItem("userReports", JSON.stringify(userReports));
-
-      // Refresh หน้า
-      window.location.reload();
+  
+  // แสดง post ที่ admin approve/done แล้ว
+  displayApprovedPosts();
+  
+  function displayApprovedPosts() {
+    const approvedPosts = JSON.parse(localStorage.getItem("approvedPosts")) || [];
+    
+    if (approvedPosts.length === 0) {
+      adminReportList.innerHTML = '<p style="text-align: center; color: #666; margin-top: 50px;">No approved posts yet.</p>';
+      return;
     }
-  });
+    
+    const postsHTML = approvedPosts.map(post => `
+      <div class="report-card">
+        <div class="report-header">
+          <div class="report-meta">
+            <span>${post.date}</span>
+          </div>
+          <h3 class="report-title">${post.title}</h3>
+          <p class="report-status">
+            <strong>Status:</strong> 
+            <span class="status-tag ${post.status.toLowerCase()}">${post.status}</span>
+          </p>
+        </div>
+        <div class="report-detail-content">
+          <div class="detail-info-wrapper">
+            ${post.image ? `
+              <div class="detail-image-container">
+                <img src="${post.image}" class="report-detail-image" alt="Report image">
+              </div>
+            ` : ''}
+            <div class="detail-text-block">
+              <div class="detail-meta">
+                <span class="detail-location"><strong>Location:</strong> ${post.position}</span>
+                <span class="detail-time"><strong>Time:</strong> ${post.date}</span>
+              </div>
+              <div class="detail-description-box">
+                <strong>Description:</strong><br>
+                ${post.desc}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+    
+    adminReportList.innerHTML = postsHTML;
+  }
 });

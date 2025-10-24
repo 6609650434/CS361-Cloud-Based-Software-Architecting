@@ -4,9 +4,38 @@ main {
   margin: auto;
 }
 
+/* Responsive main content */
+@media (max-width: 768px) {
+  main {
+    padding: 15px;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  main {
+    padding: 10px;
+  }
+}
+
 h2 {
   text-align: center;
   margin-bottom: 20px;
+}
+
+/* Responsive headings */
+@media (max-width: 768px) {
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  h2 {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+  }
 }
 
 .report-list {
@@ -64,4 +93,50 @@ h2 {
 .reject-btn {
   background-color: #d9534f;
   color: white;
+}
+
+/* Responsive report cards and buttons */
+@media (max-width: 768px) {
+  .report-list {
+    gap: 10px;
+  }
+  
+  .report-card {
+    padding: 12px;
+  }
+  
+  .admin-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .admin-actions button {
+    width: 100%;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .report-card {
+    padding: 10px;
+  }
+  
+  .report-card h3 {
+    font-size: 1.1rem;
+  }
+  
+  .admin-actions button {
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  main {
+    max-width: 1000px;
+  }
+  
+  .report-card {
+    padding: 20px;
+  }
 }

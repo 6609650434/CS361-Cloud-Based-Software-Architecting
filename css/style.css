@@ -3,12 +3,31 @@ html {
     font-size: 14pt;
 }
 
+/* Responsive base styles */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
 header {
     background-color: #e1433b;
-    padding: 5px;
+    padding: 30px;
     font-size: 16pt;
     text-align: center;
     position: relative;
+    width: 100%;
+}
+
+header h1 {
+    color: white;
+    font-weight: bold;
+    margin: 0;
+    font-size: 1.5rem;
 }
 
 .header h1 {
@@ -19,8 +38,9 @@ header {
 
 .profile-container {
     position: absolute;
-    top: 40px;
+    top: 50%;
     right: 20px;
+    transform: translateY(-50%);
 }
 
 .profile-icon {
@@ -111,6 +131,8 @@ header {
     justify-content: center;
     text-align: center;
     gap: 20px;
+    padding: 0 20px;
+    flex-wrap: wrap;
 }
 
 .nav-links a {
@@ -133,4 +155,103 @@ header {
 .nav-btn.active {
     background-color: #e53935;
     color: white;
+}
+
+/* Responsive Design */
+/* Tablet styles */
+@media (max-width: 768px) {
+    html {
+        font-size: 12pt;
+    }
+    
+    header {
+        padding: 10px 5px;
+    }
+    
+    header h1 {
+        font-size: 1.3rem;
+    }
+    
+    .profile-container {
+        right: 15px;
+    }
+    
+    .profile-icon {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .navbar {
+        margin-top: 15px;
+        gap: 10px;
+        padding: 0 10px;
+    }
+    
+    .nav-btn {
+        padding: 8px 20px;
+        font-size: 0.9rem;
+    }
+    
+    .profile-menu {
+        width: 180px;
+        right: -10px;
+    }
+}
+
+/* Mobile styles */
+@media (max-width: 480px) {
+    html {
+        font-size: 11pt;
+    }
+    
+    header {
+        padding: 8px 5px;
+    }
+    
+    header h1 {
+        font-size: 1.1rem;
+    }
+    
+    .profile-container {
+        right: 10px;
+    }
+    
+    .profile-icon {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .navbar {
+        margin-top: 10px;
+        gap: 5px;
+        padding: 0 5px;
+    }
+    
+    .nav-btn {
+        padding: 6px 15px;
+        font-size: 0.8rem;
+    }
+    
+    .profile-menu {
+        width: 160px;
+        right: -15px;
+        padding: 10px;
+    }
+    
+    .menu-avatar {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+/* Large screens */
+@media (min-width: 1200px) {
+    .navbar {
+        gap: 30px;
+    }
+    
+    .nav-btn {
+        padding: 12px 40px;
+        font-size: 1.1rem;
+    }
 }

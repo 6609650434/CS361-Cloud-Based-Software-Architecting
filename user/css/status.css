@@ -1,0 +1,284 @@
+/* ---------- โครงหลัก ---------- */
+main {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+  background-color: #f0f0f0;
+  min-height: calc(100vh - 200px);
+  margin-top: 30px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #000;
+}
+
+/* ---------- Controls ---------- */
+.status-controls {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.clear-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.clear-btn:hover {
+  background-color: #c82333;
+}
+
+/* ---------- รายการ ---------- */
+.status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.status-card {
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s, box-shadow 0.3s;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.status-card:hover {
+  background-color: #f5f5f5;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* ส่วนที่มองเห็นได้เสมอ (Header ของ Card) */
+.status-header {
+  padding: 15px;
+  display: block;
+}
+
+.status-meta {
+  display: flex;
+  justify-content: flex-start;
+  gap: 15px;
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 5px;
+}
+
+.status-title {
+  font-size: 18px;
+  color: #333;
+  margin: 0 0 5px 0;
+}
+
+.status-status {
+  font-size: 14px;
+  color: #555;
+  margin: 0;
+}
+
+.summary {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #f9f9f9;
+  border-radius: 10px;
+  padding: 12px 15px;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.summary:hover {
+  background-color: #efefef;
+}
+
+.details {
+  padding: 15px;
+  border-top: 1px solid #ddd;
+}
+
+.hidden {
+  display: none;
+}
+
+.report-img {
+  max-width: 100%;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+/* ---------- สถานะ: ใช้สีใหม่ตามโค้ดที่เจนและคลาสที่แก้ไขใน JS ---------- */
+.status-tag {
+  font-weight: bold;
+}
+
+/* คลาสที่ใช้สำหรับสถานะต่างๆ */
+.status-tag.pending,
+.status-tag.in-progress {
+  color: #FFAE00; /* ส้ม */
+}
+
+.status-tag.done {
+  color: #00BE00; /* เขียว */
+}
+
+.status-tag.rejected {
+  color: #E53935; /* แดง */
+}
+
+/* ---------- ปุ่มกด ---------- */
+.action-btns {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+.action-btns button {
+  flex: 1;
+  min-width: 100px;
+  border: 2px solid #e0e0e0;
+  background-color: #f8f8f8;
+  border-radius: 12px;
+  padding: 10px 0;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Hover effect: ปรับใช้สีใหม่ */
+.approve-btn:hover {
+  background-color: #FFAE00; /* ส้ม */
+  color: #fff;
+  border-color: #FFAE00;
+}
+
+.done-btn:hover {
+  background-color: #00BE00; /* เขียว */
+  color: #fff;
+  border-color: #00BE00;
+}
+
+.reject-btn:hover {
+  background-color: #E53935; /* แดง */
+  color: #fff;
+  border-color: #E53935;
+}
+
+/* Active (เมื่อคลิกแล้วค้างสีไว้): ปรับใช้สีใหม่ */
+.action-btns button.active.approve-btn {
+  background-color: #FFAE00; /* ส้ม */
+  color: white;
+  border-color: #FFAE00;
+}
+
+.action-btns button.active.done-btn {
+  background-color: #00BE00; /* เขียว */
+  color: white;
+  border-color: #00BE00;
+}
+
+.action-btns button.active.reject-btn {
+  background-color: #E53935; /* แดง */
+  color: white;
+  border-color: #E53935;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  main {
+    padding: 15px;
+    max-width: 100%;
+  }
+  
+  .status-card {
+    padding: 12px;
+  }
+  
+  .summary {
+    font-size: 0.95rem;
+  }
+  
+  .action-btns {
+    flex-direction: column;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+  
+  .status-header {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  main {
+    padding: 10px;
+  }
+  
+  h2 {
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+  }
+  
+  .status-card {
+    padding: 10px;
+    margin-bottom: 8px;
+  }
+  
+  .status-header {
+    padding: 10px;
+  }
+  
+  .summary {
+    font-size: 0.9rem;
+    padding: 10px 12px;
+  }
+  
+  .details {
+    padding: 10px;
+  }
+  
+  .action-btns button {
+    padding: 8px 0;
+    font-size: 0.9rem;
+    min-width: 80px;
+  }
+  
+  .report-img {
+    margin-top: 8px;
+  }
+}
+
+@media (min-width: 1200px) {
+  main {
+    max-width: 800px;
+  }
+  
+  .status-card {
+    padding: 20px 25px;
+  }
+  
+  .status-header {
+    padding: 20px;
+  }
+  
+  .summary {
+    font-size: 1.1rem;
+    padding: 15px 20px;
+  }
+}

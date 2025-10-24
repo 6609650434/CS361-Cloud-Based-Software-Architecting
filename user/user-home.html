@@ -39,6 +39,10 @@
       </div>
     </nav>
 
+    <main>
+      <!-- Approved posts will be rendered here -->
+    </main>
+
     <!-- ปุ่ม + -->
     <button id="addReportBtn" class="add-btn">+</button>
 
@@ -62,8 +66,10 @@
               src="https://www.pngplay.com/wp-content/uploads/8/Upload-Icon-Logo-Transparent-Free-PNG.png"
               alt="upload icon"
             />
+            <span>Upload Image</span>
           </label>
           <input type="file" id="imageUpload" accept="image/*" />
+          <div id="fileName" class="file-name"></div>
         </div>
 
         <div class="popup-buttons">

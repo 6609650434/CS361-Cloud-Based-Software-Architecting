@@ -1,88 +1,108 @@
 document.addEventListener("DOMContentLoaded", () => {
     const statusList = document.getElementById("statusList");
-
-    let adminReports = JSON.parse(localStorage.getItem("adminReports")) || [];
-    let userReports = JSON.parse(localStorage.getItem("userReports")) || [];
-
-    // **[เพิ่ม]** ฟังก์ชันแปลงชื่อสถานะเป็นคลาส CSS
-    const getStatusClass = (status) => {
-        if (status === "กำลังดำเนินการ") return "in-progress";
-        if (status === "ดำเนินการแล้ว") return "done";
-        if (status === "ไม่พบเหตุ") return "rejected";
-        return "pending"; // ใช้สำหรับ "รอการตรวจสอบ" หรือสถานะเริ่มต้น
-    };
-
-    // แสดงทุกโพสต์
-    adminReports.forEach((report, index) => {
-        const item = document.createElement("div");
-        item.className = "status-card";
+    
+    // แสดง post ที่รอตรวจสอบ
+    displayPendingReports();
+    
+    function displayPendingReports() {
+        const pendingReports = JSON.parse(localStorage.getItem("pendingReports")) || [];
         
-        // **[แก้ไข]** ใส่คลาสสถานะลงใน span
-        const statusClass = getStatusClass(report.status);
-
-        item.innerHTML = `
-            <div class="summary" data-index="${index}">
-                <p><strong>เหตุ:</strong> ${report.title}</p>
-                <p><strong>สถานที่:</strong> ${report.location || "-"}</p>
-                <p><strong>สถานะ:</strong> 
-                    <span class="status-tag ${statusClass}">${report.status}</span>
-                </p>
-            </div>
-
-            <div class="details hidden">
-                <p><strong>รายละเอียด:</strong> ${report.detail}</p>
-                ${report.image ? `<img src="${report.image}" alt="report image" class="report-img"/>` : ""}
-                <div class="action-btns">
-                    <button class="approve-btn" data-index="${index}">Approve</button>
-                    <button class="done-btn" data-index="${index}">Done</button>
-                    <button class="reject-btn" data-index="${index}">Reject</button>
+        if (pendingReports.length === 0) {
+            statusList.innerHTML = '<p style="text-align: center; color: #666; margin-top: 50px;">No pending reports to review.</p>';
+            return;
+        }
+        
+        const reportsHTML = pendingReports.map((report, index) => `
+            <div class="report-card">
+                <div class="report-header">
+                    <div class="report-meta">
+                        <span>${report.date}</span>
+                    </div>
+                    <h3 class="report-title">${report.title}</h3>
+                    <p class="report-status">
+                        <strong>Status:</strong> 
+                        <span class="status-tag pending">Pending Review</span>
+                    </p>
+                </div>
+                <div class="report-detail-content">
+                    <div class="detail-info-wrapper">
+                        ${report.image ? `
+                            <div class="detail-image-container">
+                                <img src="${report.image}" class="report-detail-image" alt="Report image">
+                            </div>
+                        ` : ''}
+                        <div class="detail-text-block">
+                            <div class="detail-meta">
+                                <span class="detail-location"><strong>Location:</strong> ${report.position}</span>
+                                <span class="detail-time"><strong>Time:</strong> ${report.date}</span>
+                            </div>
+                            <div class="detail-description-box">
+                                <strong>Description:</strong><br>
+                                ${report.desc}
+                            </div>
+                            <div class="admin-actions">
+                                <button class="approve-btn" data-index="${index}">Approve</button>
+                                <button class="done-btn" data-index="${index}">Done</button>
+                                <button class="reject-btn" data-index="${index}">Reject</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        `;
+        `).join('');
+        
+        statusList.innerHTML = reportsHTML;
+    }
 
-        statusList.appendChild(item);
-    });
 
-    // กดเพื่อขยาย/ย่อรายละเอียด
-    statusList.addEventListener("click", (e) => {
-        if (e.target.classList.contains("summary")) {
-            e.target.nextElementSibling.classList.toggle("hidden");
-        }
-    });
-
-    // ปุ่ม hover/active สี
+    // จัดการปุ่ม approve/done/reject
     statusList.addEventListener("click", (e) => {
         const index = e.target.getAttribute("data-index");
         if (!index) return;
 
-        const parent = e.target.closest(".action-btns");
-
         if (e.target.tagName === "BUTTON") {
-            parent.querySelectorAll("button").forEach(btn => btn.classList.remove("active"));
-            e.target.classList.add("active");
-
+            const pendingReports = JSON.parse(localStorage.getItem("pendingReports")) || [];
+            const report = pendingReports[index];
+            
             let newStatus = "";
-            if (e.target.classList.contains("approve-btn")) newStatus = "กำลังดำเนินการ";
-            else if (e.target.classList.contains("done-btn")) newStatus = "ดำเนินการแล้ว";
-            else if (e.target.classList.contains("reject-btn")) newStatus = "ไม่พบเหตุ";
-
-            // อัปเดตข้อมูล
-            adminReports[index].status = newStatus;
-            localStorage.setItem("adminReports", JSON.stringify(adminReports));
-
-            const targetTitle = adminReports[index].title;
-            userReports = userReports.map(r => 
-                r.title === targetTitle ? { ...r, status: newStatus } : r
-            );
-            localStorage.setItem("userReports", JSON.stringify(userReports));
-
-            // **[แก้ไข]** อัปเดตข้อความและคลาสสถานะทันที
-            const statusTag = document.querySelector(`.summary[data-index="${index}"] .status-tag`);
-            if (statusTag) {
-                statusTag.textContent = newStatus;
-                // **ใส่คลาสสีใหม่**
-                statusTag.className = `status-tag ${getStatusClass(newStatus)}`; 
+            let statusText = "";
+            let statusClass = "";
+            
+            if (e.target.classList.contains("approve-btn")) {
+                newStatus = "Approved";
+                statusText = "อยู่ระหว่างการดำเนินการ";
+                statusClass = "approved";
+            } else if (e.target.classList.contains("done-btn")) {
+                newStatus = "Done";
+                statusText = "ดำเนินการแล้ว";
+                statusClass = "done";
+            } else if (e.target.classList.contains("reject-btn")) {
+                newStatus = "Rejected";
+                statusText = "ไม่สำเร็จ";
+                statusClass = "rejected";
             }
+
+            // อัปเดตสถานะใน user reports
+            const userReports = JSON.parse(localStorage.getItem("userReports")) || [];
+            const updatedUserReports = userReports.map(r => 
+                r.id === report.id ? { ...r, status: newStatus } : r
+            );
+            localStorage.setItem("userReports", JSON.stringify(updatedUserReports));
+
+            // ถ้า approve หรือ done ให้เพิ่มไปยัง approved posts
+            if (newStatus === "Approved" || newStatus === "Done") {
+                const approvedPosts = JSON.parse(localStorage.getItem("approvedPosts")) || [];
+                const approvedPost = { ...report, status: newStatus };
+                approvedPosts.push(approvedPost);
+                localStorage.setItem("approvedPosts", JSON.stringify(approvedPosts));
+            }
+
+            // ลบออกจาก pending reports
+            pendingReports.splice(index, 1);
+            localStorage.setItem("pendingReports", JSON.stringify(pendingReports));
+
+            // รีเฟรชหน้า
+            displayPendingReports();
         }
     });
 });

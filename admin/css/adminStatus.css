@@ -1,14 +1,31 @@
+/* ---------- พื้นฐาน ---------- */
+* {
+  box-sizing: border-box;
+  font-family: "Sarabun", sans-serif;
+}
+
+body {
+  margin: 0;
+  background-color: #d9d9d9;
+  color: #222;
+}
+
+/* ---------- โครงหลัก ---------- */
 main {
   padding: 20px;
-  max-width: 800px;
+  max-width: 900px;
   margin: auto;
 }
 
 h2 {
   text-align: center;
   margin-bottom: 20px;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #000;
 }
 
+/* ---------- รายการ ---------- */
 .status-list {
   display: flex;
   flex-direction: column;
@@ -16,25 +33,35 @@ h2 {
 }
 
 .status-card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 15px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 15px 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+
+.status-card:hover {
+  transform: scale(1.01);
 }
 
 .summary {
   cursor: pointer;
-  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   background: #f9f9f9;
-  border-radius: 8px;
+  border-radius: 10px;
+  padding: 12px 15px;
+  font-weight: 600;
+  transition: background-color 0.2s;
 }
 
 .summary:hover {
-  background: #efefef;
+  background-color: #efefef;
 }
 
 .details {
-  padding: 10px;
+  padding: 15px;
   border-top: 1px solid #ddd;
 }
 
@@ -48,49 +75,121 @@ h2 {
   margin-top: 10px;
 }
 
+/* ---------- สถานะ: ใช้สีใหม่ตามโค้ดที่เจนและคลาสที่แก้ไขใน JS ---------- */
 .status-tag {
   font-weight: bold;
+  /* ลบ color: #f0ad4e; เพื่อให้คลาสเฉพาะเจาะจงทำงาน */
 }
 
-.status-tag.รอการตรวจสอบ {
-  color: #f0ad4e;
+/* คลาสที่ใช้สำหรับสถานะต่างๆ */
+.status-tag.pending,
+.status-tag.in-progress {
+  color: #FFAE00; /* ส้ม */
 }
 
-.status-tag.กำลังดำเนินการ {
-  color: #0275d8;
+.status-tag.done {
+  color: #00BE00; /* เขียว */
 }
 
-.status-tag.ดำเนินการแล้ว {
-  color: #5cb85c;
+.status-tag.rejected {
+  color: #E53935; /* แดง */
 }
 
-.status-tag.ไม่พบเหตุ {
-  color: #d9534f;
-}
 
+/* ---------- ปุ่มกด ---------- */
 .action-btns {
   display: flex;
+  justify-content: space-between;
   gap: 10px;
   margin-top: 15px;
+  flex-wrap: wrap;
 }
 
 .action-btns button {
-  border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
+  flex: 1;
+  min-width: 100px;
+  border: 2px solid #e0e0e0;
+  background-color: #f8f8f8;
+  border-radius: 12px;
+  padding: 10px 0;
   font-weight: bold;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Hover effect: ปรับใช้สีใหม่ */
+.approve-btn:hover {
+  background-color: #FFAE00; /* ส้ม */
   color: #fff;
+  border-color: #FFAE00;
 }
 
-.approve-btn {
-  background-color: #0275d8;
+.done-btn:hover {
+  background-color: #00BE00; /* เขียว */
+  color: #fff;
+  border-color: #00BE00;
 }
 
-.done-btn {
-  background-color: #5cb85c;
+.reject-btn:hover {
+  background-color: #E53935; /* แดง */
+  color: #fff;
+  border-color: #E53935;
 }
 
-.reject-btn {
-  background-color: #d9534f;
+/* Active (เมื่อคลิกแล้วค้างสีไว้): ปรับใช้สีใหม่ */
+.action-btns button.active.approve-btn {
+  background-color: #FFAE00; /* ส้ม */
+  color: white;
+  border-color: #FFAE00;
 }
+
+.action-btns button.active.done-btn {
+  background-color: #00BE00; /* เขียว */
+  color: white;
+  border-color: #00BE00;
+}
+
+.action-btns button.active.reject-btn {
+  background-color: #E53935; /* แดง */
+  color: white;
+  border-color: #E53935;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  main {
+    padding: 10px;
+  }
+  .status-card {
+    padding: 12px;
+  }
+  .summary {
+    font-size: 0.95rem;
+  }
+  .action-btns {
+    flex-direction: column;
+  }
+}
+
+/* ---------- สถานะ: แก้ไขให้รองรับคลาสที่กำหนดใน JavaScript ---------- */
+.status-tag {
+  font-weight: bold;
+  /* ลบ color: #f0ad4e; ออกเพื่อให้คลาสเฉพาะเจาะจงทำงาน */
+}
+
+/* คลาสสีใหม่ที่ทำงานร่วมกับ getStatusClass ใน JS */
+.status-tag.pending,
+.status-tag.in-progress {
+  color: #FFAE00; /* ส้ม: สำหรับกำลังดำเนินการ/รอตรวจสอบ */
+}
+
+.status-tag.done {
+  color: #00BE00; /* เขียว: สำหรับดำเนินการแล้ว */
+}
+
+.status-tag.rejected {
+  color: #E53935; /* แดง: สำหรับไม่พบเหตุ */
+}
+
+/* ... โค้ด CSS ส่วนอื่น ๆ ที่เหลือ ... */

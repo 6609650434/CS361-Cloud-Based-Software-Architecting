@@ -24,7 +24,7 @@ form.addEventListener('submit', (e) => {
     }
     else if (email === adminAccount.email && password === adminAccount.password) {
         alert("Welcome, Admin!");
-        window.location.href = "admin/admin-home.html";
+        window.location.href = "admin/html/admin-home.html";
     }
     else {
         alert("Invalid email or password. Try again.");

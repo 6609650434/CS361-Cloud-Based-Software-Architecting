@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>REPORTS - Admin Status</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <!-- Use adminHome base styles first so status matches home layout -->
+  <link rel="stylesheet" href="../css/admin-home.css" />
+  <!-- Keep status-specific overrides after the base stylesheet -->
+  <link rel="stylesheet" href="../css/admin-status.css" />
+</head>
+<body>
+  <!-- คัดลอก header จาก admin-home.html มาใช้ -->
+  <header>
+    <h1>REPORT</h1>
+
+    <div class="profile-container">
+      <div class="profile-icon" id="profileBtn">
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+          alt="profile"
+        />
+      </div>
+
+      <div class="profile-menu" id="profileMenu">
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+          class="menu-avatar"
+          alt="avatar"
+        />
+
+        <a href="../html/index.html" class="logout-link"> Logout </a>
+      </div>
+    </div>
+
+    <script src="../js/script.js"></script>
+  </header>
+
+  <!-- เมนูด้านบน — ตั้ง STATUS เป็น active สำหรับหน้านี้ -->
+  <nav class="navbar">
+    <div class="nav-links">
+      <a href="admin-home.html" class="nav-btn">HOME</a>
+      <a href="admin-status.html" class="nav-btn active">STATUS</a>
+    </div>
+  </nav>
+
+  <main>
+  <!-- ให้หัวข้อเหมือนหน้าหลัก เพื่อความสอดคล้อง -->
+  <h2>All User Reports</h2>
+
+    <!-- search bar -->
+    <div class="search-wrap">
+      <input id="searchInput" class="search-bar" placeholder="ค้นหารายงาน..." />
+    </div>
+
+    <!-- รายการการ์ด (single-column) -->
+    <section id="statusList" class="status-list" aria-live="polite">
+      <!-- การ์ดจะถูกเติมด้วย JavaScript โดย clone จาก <template> -->
+    </section>
+
+    <!-- template สำหรับการ์ดรายงาน (clone ใน JS) -->
+    <template id="report-template">
+      <article class="status-card" tabindex="0" aria-expanded="false">
+        <div class="report-header">
+          <div class="folder-icon">📁</div>
+          <div class="report-title" data-field="title">หัวข้อ</div>
+        </div>
+
+        <div class="report-meta">
+          <div class="meta-time" data-field="time">เวลา</div>
+          <div class="meta-date" data-field="date">วันที่</div>
+        </div>
+
+        <div class="report-detail-content" aria-hidden="true">
+          <div class="detail-info-wrapper">
+            <div class="detail-image-container" data-image-container>
+              <img class="report-detail-image" data-field="image" alt="report image" />
+            </div>
+
+            <div class="detail-text-block">
+              <div class="detail-meta">
+                <div class="meta-position" data-field="position">ตำแหน่ง</div>
+                <div class="status-label">สถานะ : <span class="status-value" data-field="status">อยู่ระหว่างตรวจสอบ</span></div>
+                <div class="meta-time-2" data-field="time2"></div>
+              </div>
+
+              <div class="detail-description-box">
+                <strong>รายละเอียด:</strong>
+                <div class="desc" data-field="desc">รายละเอียด</div>
+              </div>
+
+              <div class="admin-actions">
+                <button class="approve-btn" data-action="approve">Approve</button>
+                <button class="done-btn" data-action="done">Done</button>
+                <button class="reject-btn" data-action="reject">Reject</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <!-- template สำหรับ placeholder เมื่อไม่มีรายงาน -->
+    <template id="placeholder-template">
+      <article class="status-card empty" aria-hidden="true">
+        <div class="report-header">
+          <div class="report-title">ไม่มีรายงานที่รอการตรวจสอบ</div>
+        </div>
+      </article>
+    </template>
+
+  </main>
+
+  <script src="../js/admin-status.js"></script>
+</body>
+</html>

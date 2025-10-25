@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TU Emergency Alert</title>
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/admin-home.css" />
+  </head>
+  
+  <body>
+    <header>
+      <h1>REPORT</h1>
+
+      <div class="profile-container">
+        <div class="profile-icon" id="profileBtn">
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+            alt="profile"
+          />
+        </div>
+
+        <div class="profile-menu" id="profileMenu">
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+            class="menu-avatar"
+            alt="avatar"
+          />
+
+          <a href="../html/index.html" class="logout-link"> Logout </a>
+        </div>
+      </div>
+
+      <script src="../js/script.js"></script>
+    </header>
+
+    <nav class="navbar">
+      <div class="nav-links">
+        <a href="admin-home.html" class="nav-btn active">HOME</a>
+        <a href="admin-status.html" class="nav-btn">STATUS</a>
+      </div>
+    </nav>
+
+    <main>
+      <h2>All User Reports</h2>
+      <div id="adminReportList" class="report-list"></div>
+    </main>
+
+    <script src="../js/admin-home.js"></script>
+  </body>
+  
+</html>

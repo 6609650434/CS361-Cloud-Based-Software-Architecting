@@ -1,0 +1,333 @@
+/* คอมเมนต์: ไฟล์ CSS สำหรับหน้า admin status — คอมเมนต์เป็นภาษาไทย */
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Responsive headings */
+@media (max-width: 768px) {
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+}
+
+.report-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.report-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.report-card h3 {
+  margin-top: 0;
+}
+
+.status {
+  font-weight: bold;
+}
+
+.status.pending {
+  color: #f0ad4e;
+}
+
+.status.approved {
+  color: #5cb85c;
+}
+
+.status.rejected {
+  color: #d9534f;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.admin-actions button {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.approve-btn {
+  background-color: #5cb85c;
+  color: white;
+}
+
+.reject-btn {
+  background-color: #d9534f;
+  color: white;
+}
+
+/* หน้าเนื้อหา */
+main {
+  max-width: 1000px;
+  margin: 18px auto;
+  padding: 0 18px;
+}
+
+.page-title {
+  margin: 6px 0 18px 4px;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+/* แถบค้นหา */
+.search-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.search-bar {
+  width: 80%;
+  max-width: 680px;
+  padding: 10px 16px;
+  border-radius: 20px;
+  border: 2px solid #bdbdbd;
+  background: #fff;
+}
+
+/* รายการการ์ด (เต็มความกว้างคอลัมน์เดียว) */
+.status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* การ์ดแต่ละรายการ */
+.status-card {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
+  transition: transform .12s ease, box-shadow .12s ease;
+  cursor: pointer;
+  padding-bottom: 0;
+}
+
+/* ส่วนหัวของการ์ด (จะเปลี่ยนเป็นเหลืองเมื่อการ์ดขยาย) */
+.report-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: transparent;
+  /* เมื่อปกติเป็นขาว */
+}
+
+.status-card.expanded .report-header {
+  background: #FFB800;
+  /* เฉพาะแถบหัว */
+  color: #111;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+/* ชื่อรายงานและไอคอน */
+.folder-icon {
+  width: 22px;
+  height: 22px;
+  display: inline-block;
+}
+
+.report-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #111;
+}
+
+/* เมต้า (เวลา/วันที่) เล็กๆ ด้านล่างหัว */
+.report-meta {
+  padding: 12px 18px;
+  color: #666;
+  font-size: 13px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* ส่วนรายละเอียดที่ซ่อน/แสดงเมื่อขยายการ์ด */
+.report-detail-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .32s ease, padding .24s ease;
+  padding: 0 18px;
+}
+
+.status-card.expanded .report-detail-content {
+  max-height: 1200px;
+  padding: 18px;
+}
+
+/* เลย์เอาต์ภายในรายละเอียด (ภาพ + ข้อความ) */
+.detail-info-wrapper {
+  display: flex;
+  gap: 6%;
+  align-items: flex-start;
+}
+
+.detail-image-container {
+  flex-basis: 30%;
+  max-width: 220px;
+}
+
+.report-detail-image {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  display: block;
+  border: 1px solid #e6e6e6;
+}
+
+.detail-text-block {
+  flex-basis: 64%;
+  font-size: 14px;
+  color: #333;
+}
+
+/* เมตาในรายละเอียด (บริเวณ / เวลา / สถานะ) */
+.detail-meta {
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.detail-meta div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+/* คำว่า สถานะ : (ไม่มีจุด) และค่าสถานะเป็นสีที่กำหนด */
+.status-label {
+  margin: 12px 0;
+  color: #111;
+  font-weight: 700;
+}
+
+.status-value {
+  color: #FFAE00;
+  font-weight: 800;
+  margin-left: 8px;
+}
+
+/* กล่องรายละเอียดข้อความ */
+.detail-description-box {
+  margin-top: 8px;
+  line-height: 1.5;
+  color: #333;
+  border-top: 1px solid #eee;
+  padding-top: 12px;
+}
+
+/* ปุ่มการจัดการ — สไตล์และสีตามที่ขอ */
+.admin-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+button {
+  font-family: inherit;
+}
+
+.approve-btn,
+.done-btn,
+.reject-btn {
+  padding: 10px 26px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all .14s ease;
+}
+
+/* สีปุ่มและ Hover */
+.approve-btn {
+  color: #FFAE00;
+  border-color: #FFAE00;
+}
+
+.approve-btn:hover {
+  background: #FFAE00;
+  color: #fff;
+}
+
+.done-btn {
+  color: #00BE00;
+  border-color: #00BE00;
+}
+
+.done-btn:hover {
+  background: #00BE00;
+  color: #fff;
+}
+
+.reject-btn {
+  color: #FF3B30;
+  border-color: #FF3B30;
+}
+
+.reject-btn:hover {
+  background: #FF3B30;
+  color: #fff;
+}
+
+/* กดปุ่ม (active) */
+.approve-btn:active,
+.done-btn:active,
+.reject-btn:active {
+  transform: translateY(1px);
+}
+
+/* placeholder card — ใช้เฉพาะตอนไม่มีการ์ดเท่านั้น:
+   ไม่สามารถคลิก, ไม่เปลี่ยนสีเมื่อกด, สีหัวเป็นโปร่ง */
+.status-card.empty {
+  cursor: default;
+  pointer-events: none;
+  /* ป้องกันการคลิก/โฟกัสทั้งหมด */
+  background: #fff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
+}
+
+/* ให้หัวของ placeholder ไม่มีการไฮไลต์เป็นสีเหลือง */
+.status-card.empty .report-header {
+  background: transparent !important;
+  color: #666 !important;
+}
+
+/* ปรับสีข้อความของ placeholder ให้เหมาะสม */
+.status-card.empty .report-title {
+  color: #333;
+}
+
+/* ปรับให้มือถืออ่านง่าย */
+@media (max-width:900px) {
+  .detail-info-wrapper {
+    flex-direction: column;
+  }
+
+  .detail-image-container {
+    max-width: 100%;
+  }
+}

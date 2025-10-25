@@ -1,3 +1,19 @@
+// แปลงสถานะเป็นภาษาไทย
+function getThaiStatus(status) {
+  switch (status.toLowerCase()) {
+    case 'pending':
+      return 'รอการตรวจสอบ';
+    case 'approved':
+      return 'อยู่ระหว่างดำเนินการ';
+    case 'done':
+      return 'ดำเนินการเสร็จสิ้น';
+    case 'rejected':
+      return 'ไม่อนุมัติ';
+    default:
+      return status;
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const addReportBtn = document.getElementById("addReportBtn");
   const popup = document.getElementById("reportPopup");
@@ -173,55 +189,72 @@ document.addEventListener("DOMContentLoaded", () => {
   // ฟังก์ชันแสดง post ที่ admin approve/done แล้ว
   function displayApprovedPosts() {
     const approvedPosts = JSON.parse(localStorage.getItem("approvedPosts")) || [];
-    const homeContainer = document.querySelector('main');
+    const reportList = document.getElementById('reportList') || document.querySelector('main');
+    
+    if (!reportList) {
+      console.error('Report list container not found');
+      return;
+    }
 
-    // defensive: if main is missing, create one at body end
-    if (!homeContainer) {
-      const newMain = document.createElement('main');
-      newMain.innerHTML = approvedPosts.length === 0 ? '<p style="text-align: center; color: #666; margin-top: 50px;">No approved posts yet.</p>' : '';
-      document.body.appendChild(newMain);
-      return;
-    }
-    
     if (approvedPosts.length === 0) {
-      homeContainer.innerHTML = '<p style="text-align: center; color: #666; margin-top: 50px;">No approved posts yet.</p>';
+      reportList.innerHTML = '<p style="text-align: center; color: #666; margin-top: 50px;">No approved posts yet.</p>';
       return;
     }
     
-    const postsHTML = approvedPosts.map(post => `
-      <div class="report-card">
-        <div class="report-header">
-          <div class="report-meta">
-            <span>${post.date}</span>
-          </div>
-          <h3 class="report-title">${post.title}</h3>
-          <p class="report-status">
-            <strong>Status:</strong> 
-            <span class="status-tag ${post.status.toLowerCase()}">${post.status}</span>
-          </p>
-        </div>
-        <div class="report-detail-content">
-          <div class="detail-info-wrapper">
-            ${post.image ? `
-              <div class="detail-image-container">
-                <img src="${post.image}" class="report-detail-image" alt="Report image">
-              </div>
-            ` : ''}
-            <div class="detail-text-block">
-              <div class="detail-meta">
-                <span class="detail-location"><strong>Location:</strong> ${post.position}</span>
-                <span class="detail-time"><strong>Time:</strong> ${post.date}</span>
-              </div>
-              <div class="detail-description-box">
-                <strong>Description:</strong><br>
-                ${post.desc}
+    function toggleDescription(card) {
+      const descContainer = card.querySelector('.preview-description');
+      const descText = descContainer.querySelector('.description-text');
+      const seeMoreBtn = descContainer.querySelector('.see-more-btn');
+      
+      if (descText.classList.contains('truncated')) {
+        descText.classList.remove('truncated');
+        seeMoreBtn.textContent = 'ดูน้อยลง';
+      } else {
+        descText.classList.add('truncated');
+        seeMoreBtn.textContent = 'ดูเพิ่มเติม';
+      }
+    }
+
+    // Make toggleDescription available globally
+    window.toggleDescription = toggleDescription;
+
+    const postsHTML = approvedPosts.map(post => {
+      // Calculate if content is long enough to need truncation (more than 250 characters)
+      const needsTruncation = post.desc && post.desc.length > 250;
+      
+      return `
+        <div class="report-card">
+          <div class="report-header">
+            <div class="report-preview">
+              ${post.image ? `
+                <div class="preview-image-container">
+                  <img src="${post.image}" class="preview-image" alt="${post.title}" />
+                </div>
+              ` : ''}
+              <div class="preview-content">
+                <div class="report-title">${post.title}</div>
+                <div class="preview-description">
+                  <div class="description-text${needsTruncation ? ' truncated' : ''}">${post.desc || ''}</div>
+                  ${needsTruncation ? `
+                    <button class="see-more-btn" onclick="event.stopPropagation(); toggleDescription(this.closest('.report-card'))">
+                      ดูเพิ่มเติม
+                    </button>
+                  ` : ''}
+                </div>
+                <div class="report-info">
+                  <div class="report-meta">
+                    <div><strong>ตำแหน่ง:</strong> ${post.position}</div>
+                    <div><strong>เวลา:</strong> ${post.date}</div>
+                  </div>
+                  <span class="status-value ${post.status.toLowerCase()}">${getThaiStatus(post.status)}</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
     
-    homeContainer.innerHTML = postsHTML;
+    reportList.innerHTML = postsHTML;
   }
 });

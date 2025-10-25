@@ -1,3 +1,9 @@
+// Function to toggle status details
+function toggleStatusDetails(header) {
+    const card = header.closest('.status-card');
+    card.classList.toggle('expanded');
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     const list = document.getElementById("statusList");
     
@@ -32,20 +38,27 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             
             div.innerHTML = `
-                <div class="status-header">
-                    <div class="status-meta">
-                        <span>${report.date}</span>
-                    </div>
-                    <h3 class="status-title">${report.title}</h3>
-                    <p class="status-status">
-                        <strong>Status:</strong> 
+                <div class="status-header" onclick="toggleStatusDetails(this)">
+                    <div class="status-preview">
+                        <div class="title-section">
+                            <span class="date">${report.date}</span>
+                            <h3 class="status-title">${report.title}</h3>
+                        </div>
                         <span class="status-tag ${statusClass}">${statusText}</span>
-                    </p>
+                    </div>
                 </div>
-                <div class="details">
-                    <p><strong>Location:</strong> ${report.position}</p>
-                    <p><strong>Description:</strong> ${report.desc}</p>
-                    ${report.image ? `<img src="${report.image}" class="report-img" alt="Report image">` : ""}
+                <div class="status-details">
+                    <div class="details-content">
+                        ${report.image ? `
+                            <div class="image-container">
+                                <img src="${report.image}" class="report-img" alt="Report image">
+                            </div>
+                        ` : ''}
+                        <div class="text-content">
+                            <p><strong>ตำแหน่ง:</strong> ${report.position}</p>
+                            <p class="description"><strong>รายละเอียด:</strong> ${report.desc}</p>
+                        </div>
+                    </div>
                 </div>
             `;
             list.appendChild(div);

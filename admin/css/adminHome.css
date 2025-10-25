@@ -1,142 +1,231 @@
 main {
-  padding: 20px;
-  max-width: 800px;
-  margin: auto;
-}
-
-/* Responsive main content */
-@media (max-width: 768px) {
-  main {
-    padding: 15px;
-    max-width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  main {
-    padding: 10px;
-  }
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 0 20px;
 }
 
 h2 {
   text-align: center;
   margin-bottom: 20px;
-}
-
-/* Responsive headings */
-@media (max-width: 768px) {
-  h2 {
-    font-size: 1.5rem;
-    margin-bottom: 15px;
-  }
-}
-
-@media (max-width: 480px) {
-  h2 {
-    font-size: 1.3rem;
-    margin-bottom: 10px;
-  }
+  font-size: 2rem;
+  font-weight: 800;
+  color: #000;
 }
 
 .report-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 32px;
+  padding: 8px 0;
 }
 
 .report-card {
-  background: #fff;
+  /* outer container provides spacing; inner header is the white panel */
+  background: transparent;
+  margin-bottom: 20px;
+  width: 100%;
+  padding: 12px 8px;
+}
+
+.report-card:hover {
+  transform: none;
+}
+
+.report-header {
+  display: flex;
+  gap: 24px;
+  padding: 18px;
+  background: #fff; /* white inner panel */
+  transition: background-color 0.25s ease;
   border-radius: 12px;
-  padding: 15px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  align-items: flex-start;
+}
+.report-preview {
+  display: flex;
+  gap: 24px;
+  width: 100%;
+  align-items: flex-start;
 }
 
-.report-card h3 {
-  margin-top: 0;
+.preview-image-container {
+  width: 320px;
+  height: 180px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
-.status {
-  font-weight: bold;
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+.preview-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4px 0;
 }
 
-.status.pending {
-  color: #f0ad4e;
+.report-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 10px;
+  color: #222;
+  line-height: 1.2;
+}
+.preview-description {
+  position: relative;
+  margin: 12px 0 16px;
 }
 
-.status.approved {
-  color: #5cb85c;
+.description-text,
+.desc {
+  line-height: 1.6;
+  color: #444;
+  font-size: 15px;
+  margin-bottom: 6px;
+  white-space: pre-line;
+  max-height: none;
+  transition: max-height 0.25s ease;
 }
 
-.status.rejected {
-  color: #d9534f;
+.description-text.truncated,
+.desc.truncated {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+ .report-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #666;
+  font-size: 14px;
+  margin-top: 12px;
+  position: relative;
+}
+.report-meta {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  color: #555;
+  font-weight: 500;
 }
 
+/* Status styles */
+.status,
+.status-value,
+.status-tag,
+.report-status {
+  position: relative;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: none;
+  letter-spacing: 0.3px;
+}
+
+.status.pending,
+.status-value.pending,
+.status-tag.pending,
+.report-status .pending {
+  background-color: #fff1df;
+  color: #ff8a00;
+  border: 1px solid rgba(255,138,0,0.12);
+}
+
+.status.approved,
+.status-value.approved,
+.status-tag.approved,
+.report-status .approved {
+  background-color: #e8fff0;
+  color: #007a2e;
+  border: 1px solid rgba(0,122,46,0.08);
+}
+
+.status.rejected,
+.status-value.rejected,
+.status-tag.rejected,
+.report-status .rejected {
+  background-color: #fdecea;
+  color: #b72b2b;
+  border: 1px solid rgba(183,43,43,0.08);
+}
+
+/* Admin actions */
 .admin-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 12px;
+  margin-top: 16px;
 }
 
 .admin-actions button {
   border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.3s ease;
 }
 
 .approve-btn {
-  background-color: #5cb85c;
-  color: white;
+  background-color: #FFB800;
+  color: #000;
+}
+
+.approve-btn:hover {
+  background-color: #e5a600;
 }
 
 .reject-btn {
-  background-color: #d9534f;
+  background-color: #dc3545;
   color: white;
+}
+
+.reject-btn:hover {
+  background-color: #c82333;
 }
 
 /* Responsive report cards and buttons */
 @media (max-width: 768px) {
-  .report-list {
-    gap: 10px;
-  }
-  
-  .report-card {
-    padding: 12px;
-  }
-  
-  .admin-actions {
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .admin-actions button {
-    width: 100%;
-    padding: 10px;
-  }
+  .report-list { gap: 16px; }
+  .preview-image-container, .detail-image-container { width: 220px; height: 140px; }
+  .report-card { padding: 12px; }
+  .admin-actions { flex-direction: column; }
 }
 
 @media (max-width: 480px) {
-  .report-card {
-    padding: 10px;
-  }
-  
-  .report-card h3 {
-    font-size: 1.1rem;
-  }
-  
-  .admin-actions button {
-    padding: 8px;
-    font-size: 0.9rem;
-  }
+  .preview-image-container, .detail-image-container { width: 140px; height: 95px; }
+  .report-title { font-size: 18px; }
+  .report-card { padding: 8px; }
 }
 
 @media (min-width: 1200px) {
-  main {
-    max-width: 1000px;
-  }
-  
-  .report-card {
-    padding: 20px;
-  }
+  main { max-width: 1000px; }
+  .report-card { padding: 12px; }
+}
+
+/* See more button style (link-like) */
+.see-more-btn {
+  background: none;
+  border: none;
+  color: #1877F2;
+  font-weight: 500;
+  padding: 4px 0;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 6px;
+}
+
+.see-more-btn:hover {
+  text-decoration: underline;
 }

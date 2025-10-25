@@ -2,31 +2,37 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TU Emergency Alert</title>
-    <link rel="stylesheet" href="../css/index.css" />
+    <link rel="stylesheet" href="../css/login.css"> </head>
+    
 </head>
 
 <body>
     <div class="login-box">
-        <img class="logo" src="../image/TULOGO-nobg.png" alt="TU Logo" width="170" height="170" /><br /><br />
+        <img class="logo" src="../image/TULOGO-nobg.png" alt="TU Logo" width="170" height="170" /><br><br>
 
         <h1>TU EMERGENCY ALERT</h1>
 
-        <form id="loginForm" class="input-box">
-            <label>Email:</label><br />
-            <input id="email" required type="email" placeholder="Enter your @dome.tu.ac.th email" /><br /><br />
+        <form class="input-box" id="login-form">
+            <label>Email:</label><br>
+            <input id="email" required type="email" placeholder="Enter your @dome email" /><br><br>
 
-            <label>Password:</label><br />
-            <input id="password" type="password" placeholder="Enter your password" required />
-            <br /><br />
+            <label>Password:</label><br>
+            <input id="password" type="password" placeholder="Enter your password" /> <br><br>
 
-            <button type="submit" class="sign-in-button">Sign in</button>
+            <p id="error-message" style="color: red; display: none;"></p>
+
+            <button type="submit" class="sing-in-button">Sign in</button>
         </form>
     </div>
+    <script src="https://cdn.amplify.aws/packages/core/5.0.5/aws-amplify-core.js"></script>
+    
+    <script src="https://cdn.amplify.aws/packages/auth/5.0.5/aws-amplify-auth.js"></script>
 
     <script src="../js/index.js"></script>
+
 </body>
 
 </html>

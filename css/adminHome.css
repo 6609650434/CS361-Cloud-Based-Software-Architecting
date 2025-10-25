@@ -17,8 +17,8 @@ main {
 .report-card {
   background: #F0F0F0;
   border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow: visible;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   margin-bottom: 20px;
   width: 100%;
@@ -26,7 +26,7 @@ main {
 
 .report-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .report-header {
@@ -38,19 +38,22 @@ main {
 }
 
 .report-preview {
-  display: flex;
+  /* border: 1px solid seagreen; */
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
   width: 100%;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .preview-image-container {
+  margin: auto;
   width: 300px;
   height: 200px;
   border-radius: 8px;
   overflow: hidden;
   flex-shrink: 0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .preview-image {
@@ -61,11 +64,28 @@ main {
 }
 
 .preview-content {
-  flex: 1;
+  /* background: #000; */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 4px 0;
+}
+
+.report-dropdown-edit {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+
+  button {
+    border: none;
+  }
+
+}
+
+.edit-btn {
+  background: #1877F2;
+  color: white;
+  border-radius: 14px;
+  padding: 0px 24px;
 }
 
 .report-title {
@@ -114,8 +134,8 @@ main {
 
 .report-info {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
+  flex-direction: column;
+  /* background: #000; */
   color: #666;
   font-size: 14px;
   margin-top: 16px;
@@ -124,10 +144,53 @@ main {
 
 .report-meta {
   display: flex;
-  gap: 16px;
-  align-items: center;
+  flex-direction: column;
   color: #555;
   font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.status-dropdown {
+  position: relative;
+  margin-top: 8px;
+}
+
+.status-toggle {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #f5f5f5;
+  text-align: left;
+  cursor: pointer;
+}
+
+.status-options {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  z-index: 0;
+}
+
+.status-options div {
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.status-options div:hover {
+  background-color: #f0f0f0;
+}
+
+.status-options hr {
+  margin: 4px 0;
+  border: none;
+  border-top: 1px solid #eee;
 }
 
 /* Status styles */
@@ -213,7 +276,7 @@ main {
     width: 220px;
     height: 150px;
   }
-  
+
   .report-title {
     font-size: 20px;
   }

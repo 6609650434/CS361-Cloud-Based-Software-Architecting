@@ -21,7 +21,8 @@ document.addEventListener("DOMContentLoaded", () => {
       card.innerHTML = `
         <div class="report-header">
           <div class="report-preview">
-            ${post.image ? `
+            <div class="">
+           ${post.image ? `
               <div class="preview-image-container">
                 <img src="${post.image}" class="preview-image" alt="report image" />
               </div>
@@ -30,14 +31,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 ไม่มีรูป
               </div>
             `}
-
+            </div> 
+        
             <div class="preview-content">
+              <!-- dropdown for edit ### -->
+              <div class="report-dropdown-edit">
+                <button class="edit-btn" style="display:none;">edit</button>
+                <button class="dropdown-btn">▾</button>
+              </div>
               <div>
                 <h3 class="report-title">${escapeHtml(post.title || 'ไม่มีหัวข้อ')}</h3>
-                <div class="preview-description">
-                  <div class="desc" data-fulltext>${escapeHtml(post.desc || '')}</div>
-                  <button class="see-more-btn" aria-expanded="false">ดูเพิ่มเติม</button>
-                </div>
+                <div class="preview-description"></div>
               </div>
 
               <div class="report-info">
@@ -45,14 +49,58 @@ document.addEventListener("DOMContentLoaded", () => {
                   <div class="meta-position">ตำแหน่ง: ${escapeHtml(post.position || '-')}</div>
                   <div class="meta-time">เวลา: ${escapeHtml(post.date || '-')}</div>
                 </div>
-                <div class="report-status">
-                  <span class="status status-tag ${statusClass(post.status)}">${statusLabel(post.status)}</span>
+                 <!-- dropdown สถานะ -->
+                <div class="status-dropdown" style="display:none;">
+                  <button class="status-toggle"><span>▾</span> กําลังดําเนินการ</button>
+                  <div class="status-options">
+                    <div data-status="กำลังดำเนินการ">กำลังดำเนินการ</div>
+                    <hr>
+                    <div data-status="ดำเนินการแก้ไขเหตุแล้ว">ดำเนินการแก้ไขเหตุแล้ว</div>
+                  </div>
                 </div>
+
               </div>
             </div>
           </div>
         </div>
       `;
+
+      // ✅ ดึง element ออกมา
+      const dropdownBtn = card.querySelector('.dropdown-btn');
+      const editBtn = card.querySelector('.edit-btn');
+      const statusDropdown = card.querySelector('.status-dropdown');
+      const toggleBtn = card.querySelector('.status-toggle');
+      const optionDivs = card.querySelectorAll('.status-options div');
+
+      // ✅ เมื่อกด drop-down ให้ toggle ปุ่ม edit
+      dropdownBtn.addEventListener('click', () => {
+        editBtn.style.display = (editBtn.style.display === 'none') ? 'inline-block' : 'none';
+      });
+
+      // ✅ เมื่อกด edit ให้ toggle แสดง dropdown สถานะ
+      editBtn.addEventListener('click', () => {
+        statusDropdown.style.display =
+          (statusDropdown.style.display === 'none' || !statusDropdown.style.display)
+            ? 'block'
+            : 'none';
+      });
+
+      // ✅ เมื่อกดเลือกสถานะ
+      optionDivs.forEach(opt => {
+        opt.addEventListener('click', () => {
+          const newStatus = opt.getAttribute('data-status');
+          toggleBtn.textContent = '▾ ' + newStatus;
+          statusDropdown.querySelector('.status-options').style.display = 'none';
+          updateStatus(post, newStatus);
+        });
+      });
+
+      // ✅ toggle เปิด/ปิด รายการใน dropdown สถานะ
+      toggleBtn.addEventListener('click', () => {
+        const options = statusDropdown.querySelector('.status-options');
+        options.style.display = (options.style.display === 'block') ? 'none' : 'block';
+      });
+
 
       // Attach truncation behavior
       const descEl = card.querySelector('[data-fulltext]');
@@ -82,7 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (s.includes('done') || s.includes('complete') || s.includes('เสร็จ')) return 'ดำเนินการเสร็จสิ้น';
     if (s.includes('reject') || s.includes('ไม่อนุมัติ') || s.includes('ปฏิเสธ')) return 'ปฏิเสธ';
     // If already Thai or unknown, return original (trimmed)
-    return String(raw).length > 20 ? String(raw).slice(0,20) + '...' : String(raw);
+    return String(raw).length > 20 ? String(raw).slice(0, 20) + '...' : String(raw);
   }
 
   // Toggle truncation: if text is long, show truncated + button
@@ -157,8 +205,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const q = (filter || "").toLowerCase();
     const filtered = pending.filter(r => {
       if (!q) return true;
-      return (r.title||"").toLowerCase().includes(q) ||
-             (r.position||"").toLowerCase().includes(q);
+      return (r.title || "").toLowerCase().includes(q) ||
+        (r.position || "").toLowerCase().includes(q);
     });
 
     statusList.innerHTML = "";
@@ -180,7 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
       setText("[data-field='title']", report.title || "ไม่มีหัวข้อ");
       setText("[data-field='position']", report.position || "-");
-      setText("[data-field='time']", (report.time || "") + (report.date ? " " + report.date : "") );
+      setText("[data-field='time']", (report.time || "") + (report.date ? " " + report.date : ""));
 
       // attributes
       if (article) {
@@ -257,10 +305,10 @@ document.addEventListener("DOMContentLoaded", () => {
     let newStatus = "";
     let newStatusText = "";
 
-    if (action === "inprogress")       { newStatus = "InProgress"; newStatusText = "กำลังดำเนินการ"; }
-    else if (action === "done")        { newStatus = "Done";       newStatusText = "ดำเนินการแก้ไขเหตุแล้ว"; }
-    else if (action === "approve")     { newStatus = "Approved";   newStatusText = "อนุมัติ"; }
-    else if (action === "reject")      { newStatus = "Rejected";   newStatusText = "ไม่อนุมัติ"; }
+    if (action === "inprogress") { newStatus = "InProgress"; newStatusText = "กำลังดำเนินการ"; }
+    else if (action === "done") { newStatus = "Done"; newStatusText = "ดำเนินการแก้ไขเหตุแล้ว"; }
+    else if (action === "approve") { newStatus = "Approved"; newStatusText = "อนุมัติ"; }
+    else if (action === "reject") { newStatus = "Rejected"; newStatusText = "ไม่อนุมัติ"; }
     else return;
 
     // ถ้าเป็น inprogress: อัพเดทใน pending แล้วบันทึก (ยังคงอยู่ใน pending)

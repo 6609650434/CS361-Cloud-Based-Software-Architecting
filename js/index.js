@@ -30,8 +30,8 @@ function mainLoginLogic() {
     const amplifyConfig = {
         Auth: { // ⭐️ 'Auth' key นี้ สำคัญมาก
             region: 'us-east-1', 
-            userPoolId: 'us-east-1_z05l0nRXU',
-            userPoolWebClientId: '68n3a1dburaqlok0o4rel7g3bg'
+            userPoolId: 'us-east-1_RE0kj54Gi',
+            userPoolWebClientId: '1prj6p09jum8gd6rsfv0mju3v6'
         }
     };
     

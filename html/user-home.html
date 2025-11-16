@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TU Emergency Alert</title>
+
+    <!-- path ต้องออกจากโฟลเดอร์ html ขึ้นไปหา css -->
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/home.css" />
   </head>
@@ -26,9 +28,13 @@
             class="menu-avatar"
             alt="avatar"
           />
-          <a href="../html/index.html" class="logout-link"> Logout </a>
+          <div id="profileEmail"></div>
+          <!-- ไฟล์ index.html อยู่โฟลเดอร์เดียวกันกับ user-home.html -->
+          <a href="index.html" class="logout-link"> Logout </a>
         </div>
       </div>
+
+      <!-- script path ต้องขึ้นไปหา js -->
       <script src="../js/script.js"></script>
     </header>
 
@@ -40,7 +46,16 @@
     </nav>
 
     <main>
-      <!-- Approved posts will be rendered here -->
+      <!-- ส่วนแสดงรายการเหตุที่ approved + finish -->
+      <section class="feed-section">
+        <h2 class="feed-title-page">
+        </h2>
+
+        <!-- user-home.js จะเติมการ์ดรายงานลงใน #feedList -->
+        <section id="feedList" class="feed-list" aria-live="polite">
+          <!-- รายการจะถูกสร้างด้วย JavaScript -->
+        </section>
+      </section>
     </main>
 
     <!-- ปุ่ม + -->
@@ -79,6 +94,7 @@
       </div>
     </div>
 
+    <!-- script path ต้องขึ้นไปหา js -->
     <script src="../js/user-home.js"></script>
   </body>
 </html>

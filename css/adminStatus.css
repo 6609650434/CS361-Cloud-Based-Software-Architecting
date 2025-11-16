@@ -174,8 +174,8 @@ main {
 }
 
 .status-card.expanded .report-detail-content {
-  max-height: 1200px;
   padding: 18px;
+  overflow: visible;
 }
 
 /* เลย์เอาต์ภายในรายละเอียด (ภาพ + ข้อความ) */
@@ -237,6 +237,16 @@ main {
   color: #333;
   border-top: 1px solid #eee;
   padding-top: 12px;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.detail-description-box .desc {
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 /* ปุ่มการจัดการ — สไตล์และสีตามที่ขอ */

@@ -1,185 +1,237 @@
-// คอมเมนต์ทั้งหมดเป็นภาษาไทย
-// โค้ดนี้ใช้ <template> ใน HTML แล้ว clone เพื่อเติมข้อมูล — ไม่สร้าง HTML ด้วย string
-
+// admin-status.js (fixed to work with adminStatus.css)
 document.addEventListener("DOMContentLoaded", () => {
-  const statusList = document.getElementById("statusList");
+  const API_BASE = "https://1pb257oa3g.execute-api.us-east-1.amazonaws.com/prod";
+  const S3_BASE  = "https://tu-emergency-alert-bucket-cp2.s3.amazonaws.com/";
+  const statusList  = document.getElementById("statusList");
   const searchInput = document.getElementById("searchInput");
-  const reportTpl = document.getElementById("report-template");
-  const placeholderTpl = document.getElementById("placeholder-template");
 
-  // โหลดรายการ pending จาก localStorage (คืนค่าเป็น array)
-  function loadPendingReports() {
+  let allReports = [];
+  let filtered   = [];
+
+  // ---------- helper: เวลา ----------
+  function formatDateTime(iso) {
+    if (!iso) return { date: "-", time: "-" };
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return { date: "-", time: "-" };
+
+    const date = d.toLocaleDateString("th-TH", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+    const time = d.toLocaleTimeString("th-TH", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    return { date, time };
+  }
+
+  function s3Url(key) {
+    if (!key) return null;
+    if (/^https?:\/\//i.test(key)) return key;
+    return S3_BASE + key.replace(/^\/+/, "");
+  }
+
+  // ---------- โหลด incident ที่ status = pending_review ----------
+  async function fetchPending() {
+    statusList.innerHTML = `<p style="padding:16px;text-align:center;">⏳ กำลังโหลด...</p>`;
+
     try {
-      return JSON.parse(localStorage.getItem("pendingReports")) || [];
-    } catch (e) {
-      return [];
+      const url = `${API_BASE}/admin/incidents?status=pending_review`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const items = data.items || [];
+
+      allReports = items.map((it) => {
+        const images = (it.images || [])
+          .map((x) => (typeof x === "string" ? x : x.S))
+          .filter(Boolean);
+
+        return {
+          id:          it.id || it.incidentId,
+          title:       it.title || "ไม่ระบุหัวข้อ",
+          location:    it.location || "-",
+          description: it.description || it.detail || "-",
+          status:      it.status || "pending_review",
+          createdAt:   it.createdAt || it.reportedAt || it.lastUpdatedAt || null,
+          images,
+          reportedBy:  it.reportedBy || "-",
+        };
+      });
+
+      
+      // ใหม่สุดอยู่บน
+      allReports.sort((a, b) => {
+        if (!a.createdAt && !b.createdAt) return 0;
+        if (!a.createdAt) return 1;
+        if (!b.createdAt) return -1;
+        return a.createdAt < b.createdAt ? 1 : -1;
+      });
+
+      filtered = allReports.slice();
+      render();
+    } catch (err) {
+      console.error(err);
+      statusList.innerHTML =
+        `<p style="padding:16px;text-align:center;color:red;">โหลดข้อมูลไม่สำเร็จ: ${err.message}</p>`;
     }
   }
 
-  // บันทึกรายการ pending กลับลง localStorage
-  function savePendingReports(list) {
-    localStorage.setItem("pendingReports", JSON.stringify(list));
-  }
-
-  // คืนข้อความสถานะภาษาไทย (ถ้ามี statusText ให้ใช้นั้น)
-  function getStatusText(report) {
-    return report.statusText || "อยู่ระหว่างตรวจสอบ";
-  }
-
-  // ฟังก์ชันแสดงรายการโดย clone template (ไม่ใช้ innerHTML สตริง)
-  function displayPendingReports(filter = "") {
-    const pending = loadPendingReports();
-    const q = (filter || "").toLowerCase();
-
-    // กรองตามคำค้น
-    const filtered = pending.filter(r => {
-      if (!q) return true;
-      return (r.title || "").toLowerCase().includes(q) ||
-             (r.position || "").toLowerCase().includes(q) ||
-             (r.desc || "").toLowerCase().includes(q);
-    });
-
-    // เคลียร์รายการเดิม
+  // ---------- วาดการ์ดตาม CSS เดิม ----------
+  function render() {
     statusList.innerHTML = "";
 
-    // ถ้าไม่มีรายการ ให้แสดง placeholder (class empty)
-    if (filtered.length === 0) {
-      const ph = placeholderTpl.content.cloneNode(true);
-      statusList.appendChild(ph);
+    if (!filtered.length) {
+      statusList.innerHTML =
+        `<p style="padding:16px;text-align:center;">ไม่มีรายงานที่รอการตรวจสอบ</p>`;
       return;
     }
 
-    // สร้างแต่ละการ์ดโดย clone template
-    filtered.forEach((report, idx) => {
-      const node = reportTpl.content.cloneNode(true);
-      const article = node.querySelector("article.status-card");
+    filtered.forEach((r) => {
+      const { date, time } = formatDateTime(r.createdAt);
+      const imgUrl = r.images && r.images.length ? s3Url(r.images[0]) : null;
 
-      // เติมข้อความใน field ต่าง ๆ
-      const setFieldText = (selector, value) => {
-        const el = node.querySelector(selector);
-        if (el) el.textContent = value ?? "";
-      };
+      const card = document.createElement("article");
+      card.className = "status-card";
+      card.dataset.id = r.id;
 
-      setFieldText("[data-field='title']", report.title || "ไม่มีหัวข้อ");
-      setFieldText("[data-field='time']", report.time || "");
-      setFieldText("[data-field='date']", report.date || "");
-      setFieldText("[data-field='position']", report.position || "-");
-      setFieldText("[data-field='status']", getStatusText(report));
-      setFieldText("[data-field='desc']", report.desc || "-");
-      setFieldText("[data-field='time2']", (report.time || "") + (report.date ? " " + report.date : "") );
+      // header + meta + detail โครงตาม adminStatus.css
+      card.innerHTML = `
+        <div class="report-header">
+          <div class="folder-icon">📁</div>
+          <div class="report-title">${r.title}</div>
+        </div>
 
-      // จัดการรูป: ถ้าไม่มีรูป ให้ซ่อน container
-      const imgEl = node.querySelector("[data-field='image']");
-      const imgContainer = node.querySelector("[data-image-container]");
-      if (report.image && imgEl && imgContainer) {
-        imgEl.src = report.image;
-        imgEl.alt = report.title || "report image";
-        imgContainer.style.display = ""; // แสดง
-      } else if (imgContainer) {
-        imgContainer.style.display = "none"; // ซ่อนถ้าไม่มีรูป
+        <div class="report-meta">
+          <div class="meta-time">${time}</div>
+          <div class="meta-date">${date}</div>
+          <div class="meta-reporter">ผู้รายงาน: ${r.reportedBy}</div>
+        </div>
+
+        <div class="report-detail-content">
+          <div class="detail-info-wrapper">
+            <div class="detail-image-container">
+              ${imgUrl
+                ? `<img class="report-detail-image" src="${imgUrl}" alt="report image" />`
+                : `<div style="color:#777;">(ไม่มีรูปภาพ)</div>`}
+            </div>
+
+            <div class="detail-text-block">
+              <div class="detail-meta">
+                <div>ตำแหน่ง: ${r.location}</div>
+                <div class="status-label">
+                  สถานะ :
+                  <span class="status-value status-${r.status}">อยู่ระหว่างตรวจสอบ</span>
+                </div>
+              </div>
+
+              <div class="detail-description-box">
+                <strong>รายละเอียด:</strong>
+                <div class="desc">${r.description}</div>
+              </div>
+
+              <div class="admin-actions">
+                <button class="approve-btn">Approve</button>
+                <button class="done-btn">Done</button>
+                <button class="reject-btn">Reject</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const header = card.querySelector(".report-header");
+      const detailContent = card.querySelector(".report-detail-content");
+      const approveBtn = card.querySelector(".approve-btn");
+      const doneBtn    = card.querySelector(".done-btn");
+      const rejectBtn  = card.querySelector(".reject-btn");
+
+      // 👉 ใช้ .expanded ให้ตรงกับ CSS (ไม่ใช้ style.display)
+      header.addEventListener("click", () => {
+        const isExpanded = card.classList.contains("expanded");
+        
+        if (!isExpanded) {
+          // เปิด: คำนวณความสูงที่แท้จริง
+          card.classList.add("expanded");
+          // ใช้ setTimeout เพื่อให้ DOM update ก่อน
+          setTimeout(() => {
+            const scrollHeight = detailContent.scrollHeight;
+            detailContent.style.maxHeight = scrollHeight + "px";
+          }, 0);
+        } else {
+          // ปิด: ตั้งกลับเป็น 0
+          detailContent.style.maxHeight = "0";
+          card.classList.remove("expanded");
+        }
+      });
+
+      approveBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        changeStatus(r.id, "approved", card);
+      });
+      doneBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        changeStatus(r.id, "done", card);
+      });
+      rejectBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        changeStatus(r.id, "rejected", card);
+      });
+
+      // ซ่อนรูปถ้าขึ้น error
+      const imgEl = card.querySelector(".report-detail-image");
+      if (imgEl) {
+        imgEl.onerror = () => {
+          imgEl.parentElement.innerHTML = `<div style="color:#777;">(ไม่สามารถแสดงรูปได้)</div>`;
+        };
       }
 
-      // เก็บ id/index ไว้ใน article และปุ่ม
-      if (article) {
-        article.dataset.id = report.id;
-        article.dataset.index = idx;
-        article.setAttribute("aria-expanded", "false");
-
-        // ปุ่ม: หาใน clone แล้วผูก listener (stopPropagation เพื่อไม่ให้ trigger toggle)
-        const approveBtn = node.querySelector("button.approve-btn");
-        const doneBtn = node.querySelector("button.done-btn");
-        const rejectBtn = node.querySelector("button.reject-btn");
-
-        if (approveBtn) {
-          approveBtn.addEventListener("click", (ev) => {
-            ev.stopPropagation();
-            updateReportStatus(report.id, "approve");
-          });
-        }
-        if (doneBtn) {
-          doneBtn.addEventListener("click", (ev) => {
-            ev.stopPropagation();
-            updateReportStatus(report.id, "done");
-          });
-        }
-        if (rejectBtn) {
-          rejectBtn.addEventListener("click", (ev) => {
-            ev.stopPropagation();
-            updateReportStatus(report.id, "reject");
-          });
-        }
-
-        // คลิกที่ article => toggle ขยาย/ยุบ (ผูกตรงกับ element clone)
-        article.addEventListener("click", () => toggleCard(article));
-        // คีย์บอร์ด: Enter เพื่อขยาย
-        article.addEventListener("keydown", (e) => {
-          if (e.key === "Enter") toggleCard(article);
-        });
-      }
-
-      // append ไปยัง list
-      statusList.appendChild(node);
+      statusList.appendChild(card);
     });
   }
 
-  // toggle การ์ด: เพิ่ม/ลบ class expanded และจัด aria
-  function toggleCard(card) {
-    if (!card) return;
-    const isExpanded = card.classList.toggle("expanded");
-    card.setAttribute("aria-expanded", isExpanded ? "true" : "false");
-    const detailEl = card.querySelector(".report-detail-content");
-    if (detailEl) detailEl.setAttribute("aria-hidden", !isExpanded);
-    if (isExpanded) {
-      setTimeout(() => card.scrollIntoView({ behavior: "smooth", block: "center" }), 120);
+  // ---------- เรียก Lambda เปลี่ยนสถานะ ----------
+  async function changeStatus(id, newStatus, cardEl) {
+    try {
+      const url = `${API_BASE}/admin/incidents/${encodeURIComponent(id)}/status`;
+      const res = await fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: newStatus,
+          admin: "admin@dome.tu.ac.th", // ภายหลังจะเปลี่ยนเป็น email จาก Cognito ก็ได้
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "อัปเดตสถานะไม่สำเร็จ");
+
+      // ลบออกจาก list เพราะหน้านี้ใช้สำหรับ pending เท่านั้น
+      allReports = allReports.filter((x) => x.id !== id);
+      filtered   = filtered.filter((x) => x.id !== id);
+      if (cardEl) cardEl.remove();
+      if (!filtered.length) render();
+
+      alert(`✅ เปลี่ยนสถานะเป็น ${newStatus} สำเร็จ`);
+    } catch (err) {
+      console.error(err);
+      alert("❌ " + err.message);
     }
   }
 
-  // อัพเดทสถานะเมื่อกดปุ่ม Approve / Done / Reject
-  function updateReportStatus(reportId, action) {
-    const pending = loadPendingReports();
-    const idx = pending.findIndex(r => String(r.id) === String(reportId));
-    if (idx === -1) return;
+  // ---------- search ----------
+  searchInput.addEventListener("input", () => {
+    const q = searchInput.value.trim().toLowerCase();
+    filtered = !q
+      ? allReports.slice()
+      : allReports.filter((r) =>
+          (r.title || "").toLowerCase().includes(q) ||
+          (r.location || "").toLowerCase().includes(q) ||
+          (r.description || "").toLowerCase().includes(q)
+        );
+    render();
+  });
 
-    const report = pending[idx];
-    let newStatus = "";
-    let newStatusText = "";
-
-    if (action === "approve") { newStatus = "Approved"; newStatusText = "อนุมัติ"; }
-    if (action === "done")    { newStatus = "Done";     newStatusText = "เสร็จแล้ว"; }
-    if (action === "reject")  { newStatus = "Rejected"; newStatusText = "ไม่อนุมัติ"; }
-
-    // อัพเดท userReports (ถ้ามี)
-    const userReports = JSON.parse(localStorage.getItem("userReports")) || [];
-    const updatedUserReports = userReports.map(r => r.id === report.id ? { ...r, status: newStatus, statusText: newStatusText } : r);
-    localStorage.setItem("userReports", JSON.stringify(updatedUserReports));
-
-    // ถ้าอนุมัติ/เสร็จ ให้ย้ายไป approvedPosts
-    if (newStatus === "Approved" || newStatus === "Done") {
-      const approved = JSON.parse(localStorage.getItem("approvedPosts")) || [];
-      approved.push({ ...report, status: newStatus, statusText: newStatusText });
-      localStorage.setItem("approvedPosts", JSON.stringify(approved));
-    }
-
-    // ลบจาก pending และบันทึก
-    pending.splice(idx, 1);
-    savePendingReports(pending);
-
-    // รีเฟรช UI (รักษาคำค้นถ้ามี)
-    const q = (searchInput && searchInput.value) ? searchInput.value.trim() : "";
-    displayPendingReports(q);
-  }
-
-  // ให้เรียกได้จาก inline onclick ถ้าจำเป็น (fallback)
-  window.handleAction = (reportId, action) => {
-    if (!reportId || !action) return;
-    updateReportStatus(reportId, action);
-  };
-
-  // search realtime (ถ้ามี input)
-  if (searchInput) {
-    searchInput.addEventListener("input", () => displayPendingReports(searchInput.value.trim()));
-  }
-
-  // แสดงครั้งแรก
-  displayPendingReports();
+  // เริ่มโหลด
+  fetchPending();
 });

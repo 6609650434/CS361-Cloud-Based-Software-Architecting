@@ -1,260 +1,348 @@
-// แปลงสถานะเป็นภาษาไทย
-function getThaiStatus(status) {
-  switch (status.toLowerCase()) {
-    case 'pending':
-      return 'รอการตรวจสอบ';
-    case 'approved':
-      return 'อยู่ระหว่างดำเนินการ';
-    case 'done':
-      return 'ดำเนินการเสร็จสิ้น';
-    case 'rejected':
-      return 'ไม่อนุมัติ';
-    default:
-      return status;
-  }
-}
-
+// ../js/user-home.js
 document.addEventListener("DOMContentLoaded", () => {
-  const addReportBtn = document.getElementById("addReportBtn");
-  const popup = document.getElementById("reportPopup");
-  const cancelBtn = document.getElementById("cancelBtn");
-  const postBtn = document.getElementById("postBtn");
-  
-  // แสดง post ที่ admin approve/done แล้ว
-  displayApprovedPosts();
+  const API_BASE =
+    "https://1pb257oa3g.execute-api.us-east-1.amazonaws.com/prod";
 
-  // เปิด/ปิด popup (toggle) และจัดการตำแหน่ง
-  if (addReportBtn) {
-    addReportBtn.addEventListener("click", (e) => {
-      e.preventDefault();
+  // -----------------------------
+  // ข้อมูลผู้ใช้จาก localStorage (ใช้ทั้งแสดงชื่อ & auth header)
+  // -----------------------------
+  const userEmail = localStorage.getItem("user_email") || "";
+  const userRole = localStorage.getItem("user_role") || "";
+  const idToken = localStorage.getItem("id_token") || "";
 
-      // if already open, close it (toggle behavior)
-      if (popup.classList.contains("active")) {
-        popup.classList.remove("active");
-        // remove inline positioning so CSS default is restored next time
-        popup.style.position = "";
-        popup.style.top = "";
-        popup.style.left = "";
-        popup.style.right = "";
-        popup.style.bottom = "";
-        return;
+  const authHeader = idToken
+    ? {
+        Authorization: idToken.startsWith("Bearer ")
+          ? idToken
+          : `Bearer ${idToken}`,
       }
+    : {};
 
-      // otherwise open and position
-      try {
-        // reset any previously set inline positions
-        popup.style.left = "";
-        popup.style.top = "";
-        popup.style.right = "";
-        popup.style.bottom = "";
-
-        const btnRect = addReportBtn.getBoundingClientRect();
-        // ensure popup is temporarily visible to measure it
-        popup.classList.add("active");
-        const popupRect = popup.getBoundingClientRect();
-
-        // preferred: place above the button
-        let top = btnRect.top - popupRect.height - 8; // 8px gap
-        let left = btnRect.left + (btnRect.width / 2) - (popupRect.width / 2);
-
-        // If placing above would go off the top, place below the button
-        if (top < 8) {
-          top = btnRect.bottom + 8;
-        }
-
-        // Clamp horizontally to viewport with 8px padding
-        const pad = 8;
-        if (left < pad) left = pad;
-        if (left + popupRect.width > window.innerWidth - pad) {
-          left = Math.max(pad, window.innerWidth - popupRect.width - pad);
-        }
-
-        // Clamp vertically as well
-        if (top + popupRect.height > window.innerHeight - pad) {
-          top = Math.max(pad, window.innerHeight - popupRect.height - pad);
-        }
-
-        // place using fixed positioning
-        popup.style.position = "fixed";
-        popup.style.top = `${top}px`;
-        popup.style.left = `${left}px`;
-      } catch (err) {
-        // fallback: simply show popup in its normal (CSS) position
-        popup.classList.add("active");
-      }
-    });
+  // แสดง user info (ถ้ามี element ให้แสดง)
+  const infoBox = document.getElementById("userInfo");
+  if (infoBox && userEmail) {
+    infoBox.textContent = `${userEmail} (${userRole || "USER"})`;
   }
 
-  // ปิด popup
-  cancelBtn.addEventListener("click", () => {
-    popup.classList.remove("active");
-    popup.style.position = "";
-    popup.style.top = "";
-    popup.style.left = "";
-    popup.style.right = "";
-    popup.style.bottom = "";
-  });
+  // -----------------------------
+  // ส่วนแสดง feed HOME (approved + finish/done)
+  // -----------------------------
+  const feedList = document.getElementById("feedList");
 
-  // ปิด popup เมื่อคลิกนอก
-  document.addEventListener("click", (e) => {
-    if (popup.classList.contains("active") && !popup.contains(e.target) && !addReportBtn.contains(e.target)) {
-      popup.classList.remove("active");
-      popup.style.position = "";
-      popup.style.top = "";
-      popup.style.left = "";
-      popup.style.right = "";
-      popup.style.bottom = "";
+  const S3_PUBLIC_BASE =
+    "https://tu-emergency-alert-bucket-cp2.s3.amazonaws.com/";
+
+  function s3UrlFromKey(key) {
+    if (!key) return null;
+    if (/^https?:\/\//i.test(key)) return key;
+    return S3_PUBLIC_BASE + key.replace(/^\/+/, "");
+  }
+
+  function statusLabel(s) {
+    const x = (s || "").toLowerCase();
+    if (x === "approved") return "กำลังดำเนินการแก้ไข";
+    if (x === "finish" || x === "done") return "ดำเนินการแก้ไขเสร็จสิ้น";
+    return s || "-";
+  }
+
+  // ✅ แก้ให้คืนค่า เวลา + วันที่ + พ.ศ.
+  function formatTime(iso) {
+    if (!iso) return "-";
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "-";
+    const pad = (n) => String(n).padStart(2, "0");
+    const hours = pad(d.getHours());
+    const mins  = pad(d.getMinutes());
+    const day   = pad(d.getDate());
+    const month = pad(d.getMonth() + 1);
+    const yearBE = d.getFullYear() + 543;
+    return `${hours}:${mins} ${day}/${month}/${yearBE}`;
+  }
+
+  async function loadFeed() {
+    if (!feedList) return;
+    feedList.innerHTML =
+      "<p style='text-align:center;margin-top:20px;color:#666'>กำลังโหลดข้อมูล.</p>";
+
+    try {
+      const res = await fetch(`${API_BASE}/reports`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader,
+        },
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      let items = data.items || data || [];
+
+      // แสดงเฉพาะ approved + finish/done
+      items = items.filter((it) => {
+        const s = (it.status || "").toLowerCase();
+        return s === "approved" || s === "finish" || s === "done";
+      });
+
+      // เรียงเวลาล่าสุดก่อน (ใช้ reportedAt เป็นหลัก)
+      items.sort((a, b) =>
+        (b.reportedAt || "").localeCompare(a.reportedAt || "")
+      );
+
+      renderFeed(items);
+    } catch (err) {
+      console.error(err);
+      feedList.innerHTML =
+        "<p style='padding:12px;color:#c00'>โหลดรายการไม่สำเร็จ</p>";
     }
-  });
+  }
 
-  // ปิดด้วยปุ่ม Esc
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && popup.classList.contains("active")) {
-      popup.classList.remove("active");
-      popup.style.position = "";
-      popup.style.top = "";
-      popup.style.left = "";
-      popup.style.right = "";
-      popup.style.bottom = "";
-    }
-  });
+  function renderFeed(items) {
+    if (!feedList) return;
 
-  // แสดงชื่อไฟล์เมื่อเลือกไฟล์
-  const imageUpload = document.getElementById("imageUpload");
-  const fileName = document.getElementById("fileName");
-  
-  imageUpload.addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      fileName.textContent = `📎 ${file.name}`;
-      fileName.classList.add("show");
-    } else {
-      fileName.classList.remove("show");
-    }
-  });
-
-  // ปุ่ม POST
-  postBtn.addEventListener("click", () => {
-    const title = document.getElementById("titleInput").value.trim();
-    const position = document.getElementById("positionInput").value.trim();
-    const desc = document.getElementById("descInput").value.trim();
-    const imageFile = document.getElementById("imageUpload").files[0];
-
-    if (!title || !position || !desc) {
-      alert("Please fill in all fields!");
+    if (!items.length) {
+      feedList.innerHTML =
+        "<p style='text-align:center;margin-top:20px;color:#666'>ยังไม่มีเหตุที่กำลังดำเนินการหรือเสร็จสิ้น</p>";
       return;
     }
 
-    // อ่านรูปภาพเป็น Base64 (ถ้ามี)
-    const reader = new FileReader();
-    reader.onload = function () {
-      const imageData = imageFile ? reader.result : null;
+    feedList.innerHTML = "";
 
-      const newReport = {
-        id: Date.now(),
-        title,
-        position,
-        desc,
-        image: imageData,
-        status: "Pending",
-        date: new Date().toLocaleString(),
-        userId: "current_user" // จำลอง user ID
-      };
+    items.forEach((r) => {
+      const img =
+        r.images && r.images.length ? s3UrlFromKey(r.images[0]) : null;
+      const timeText = formatTime(r.reportedAt || r.createdAt);
+      const title = r.title || "ไม่ระบุหัวข้อ";
+      const location = r.location || "-";
+      const desc = r.description || "-";
+      const descShort =
+        desc.length > 70 ? desc.substring(0, 70).trim() + "…" : desc;
+      const statusText = statusLabel(r.status);
+      const statusLower = (r.status || "").toLowerCase();
+      const statusClass =
+        statusLower === "finish" || statusLower === "done"
+          ? "status-finished"
+          : "";
 
-      // เก็บไว้ใน localStorage ของ user (สำหรับ status page)
-      const userReports = JSON.parse(localStorage.getItem("userReports")) || [];
-      userReports.push(newReport);
-      localStorage.setItem("userReports", JSON.stringify(userReports));
+      const card = document.createElement("article");
+      card.className = "feed-card";
 
-      // ส่งไปยัง admin สำหรับตรวจสอบ
-      const pendingReports = JSON.parse(localStorage.getItem("pendingReports")) || [];
-      pendingReports.push(newReport);
-      localStorage.setItem("pendingReports", JSON.stringify(pendingReports));
+      card.innerHTML = `
+        <div class="feed-body">
+          ${
+            img
+              ? `
+          <div class="feed-image-wrap">
+            <img src="${img}" class="feed-image"
+                 alt="incident image"
+                 onerror="this.parentElement.style.display='none';" />
+          </div>
+          `
+              : ""
+          }
 
-      alert("Report submitted successfully!");
-      popup.classList.remove("active");
+          <div class="feed-text-wrap">
+            <div class="feed-header">
+              <h3 class="feed-title">${title}</h3>
+              <button class="feed-toggle-btn" aria-label="ดูรายละเอียด">▾</button>
+            </div>
 
-      // เคลียร์ input
-      document.getElementById("titleInput").value = "";
-      document.getElementById("positionInput").value = "";
-      document.getElementById("descInput").value = "";
-      document.getElementById("imageUpload").value = "";
-      fileName.classList.remove("show");
-    };
+            <div class="feed-meta">
+              <span>📍 ${location}</span>
+              <span>🕒 ${timeText}</span>
+            </div>
 
-    if (imageFile) reader.readAsDataURL(imageFile);
-    else reader.onload();
-  });
-  
-  // ฟังก์ชันแสดง post ที่ admin approve/done แล้ว
-  function displayApprovedPosts() {
-    const approvedPosts = JSON.parse(localStorage.getItem("approvedPosts")) || [];
-    const reportList = document.getElementById('reportList') || document.querySelector('main');
-    
-    if (!reportList) {
-      console.error('Report list container not found');
-      return;
-    }
+            <span class="feed-status-chip ${statusClass}">${statusText}</span>
 
-    if (approvedPosts.length === 0) {
-      reportList.innerHTML = '<p style="text-align: center; color: #666; margin-top: 50px;">No approved posts yet.</p>';
-      return;
-    }
-    
-    function toggleDescription(card) {
-      const descContainer = card.querySelector('.preview-description');
-      const descText = descContainer.querySelector('.description-text');
-      const seeMoreBtn = descContainer.querySelector('.see-more-btn');
-      
-      if (descText.classList.contains('truncated')) {
-        descText.classList.remove('truncated');
-        seeMoreBtn.textContent = 'ดูน้อยลง';
-      } else {
-        descText.classList.add('truncated');
-        seeMoreBtn.textContent = 'ดูเพิ่มเติม';
-      }
-    }
+            
 
-    // Make toggleDescription available globally
-    window.toggleDescription = toggleDescription;
-
-    const postsHTML = approvedPosts.map(post => {
-      // Calculate if content is long enough to need truncation (more than 250 characters)
-      const needsTruncation = post.desc && post.desc.length > 250;
-      
-      return `
-        <div class="report-card">
-          <div class="report-header">
-            <div class="report-preview">
-              ${post.image ? `
-                <div class="preview-image-container">
-                  <img src="${post.image}" class="preview-image" alt="${post.title}" />
-                </div>
-              ` : ''}
-              <div class="preview-content">
-                <div class="report-title">${post.title}</div>
-                <div class="preview-description">
-                  <div class="description-text${needsTruncation ? ' truncated' : ''}">${post.desc || ''}</div>
-                  ${needsTruncation ? `
-                    <button class="see-more-btn" onclick="event.stopPropagation(); toggleDescription(this.closest('.report-card'))">
-                      ดูเพิ่มเติม
-                    </button>
-                  ` : ''}
-                </div>
-                <div class="report-info">
-                  <div class="report-meta">
-                    <div><strong>ตำแหน่ง:</strong> ${post.position}</div>
-                    <div><strong>เวลา:</strong> ${post.date}</div>
-                  </div>
-                  <span class="status-value ${post.status.toLowerCase()}">${getThaiStatus(post.status)}</span>
-                </div>
-              </div>
+            <div class="feed-extra">
+              <p><strong>รายละเอียดเต็ม:</strong> ${desc}</p>
+              <p><strong>สถานะ:</strong> ${statusText}</p>
             </div>
           </div>
         </div>
       `;
-    }).join('');
-    
-    reportList.innerHTML = postsHTML;
+
+      const extra = card.querySelector(".feed-extra");
+      const toggleBtn = card.querySelector(".feed-toggle-btn");
+      const statusChip = card.querySelector(".feed-status-chip");
+      const descShortEl = card.querySelector(".feed-desc-short");
+
+      toggleBtn.addEventListener("click", () => {
+        const isExpanded = extra.classList.contains("expanded");
+
+        if (isExpanded) {
+          extra.style.maxHeight = "0";
+          extra.classList.remove("expanded");
+          toggleBtn.textContent = "▾";
+          if (statusChip) statusChip.style.display = "inline-block";
+          if (descShortEl) descShortEl.style.display = "block";
+        } else {
+          extra.classList.add("expanded");
+          setTimeout(() => {
+            const scrollHeight = extra.scrollHeight;
+            extra.style.maxHeight = scrollHeight + "px";
+          }, 0);
+          toggleBtn.textContent = "▴";
+          if (statusChip) statusChip.style.display = "none";
+          if (descShortEl) descShortEl.style.display = "none";
+        }
+      });
+
+      feedList.appendChild(card);
+    });
+  }
+
+  // โหลด feed ครั้งแรก
+  loadFeed();
+
+  // ============================
+  // ส่วน popup + การส่งรายงาน (ใช้ presigned URL)
+  // ============================
+  const addReportBtn = document.getElementById("addReportBtn");
+  const popup = document.getElementById("reportPopup");
+  const cancelBtn = document.getElementById("cancelBtn");
+  const postBtn = document.getElementById("postBtn");
+  const imageUpload = document.getElementById("imageUpload");
+  const fileName = document.getElementById("fileName");
+
+  // เปิด popup กลางจอ
+  if (addReportBtn) {
+    addReportBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      popup.classList.add("active");
+    });
+  }
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", () => popup.classList.remove("active"));
+  }
+
+  // แสดงชื่อไฟล์
+  if (imageUpload) {
+    imageUpload.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        fileName.textContent = `📎 ${file.name}`;
+        fileName.classList.add("show");
+      } else {
+        fileName.classList.remove("show");
+        fileName.textContent = "";
+      }
+    });
+  }
+
+  // กดส่งรายงาน (POST /reports + presigned upload)
+  if (postBtn) {
+    postBtn.addEventListener("click", async () => {
+      const title = document.getElementById("titleInput").value.trim();
+      const position = document.getElementById("positionInput").value.trim();
+      const desc = document.getElementById("descInput").value.trim();
+      const file = imageUpload ? imageUpload.files[0] : null;
+
+      if (!title || !position || !desc) {
+        alert("กรุณากรอกข้อมูลให้ครบ!");
+        return;
+      }
+
+      // สร้าง incidentId ให้สอดคล้องกับ Lambda get_presigned_upload
+      const today = new Date();
+      const datePart = today.toISOString().slice(0, 10).replace(/-/g, "");
+      const randPart = Math.floor(Math.random() * 9000 + 1000);
+      const incidentId = `INC-${datePart}-${randPart}`;
+
+      try {
+        let uploadedKey = null;
+
+        // (1) ถ้ามีไฟล์ → ขอ presigned URL จาก Lambda /uploads/presign แล้ว PUT
+        if (file) {
+          const contentType = file.type || "application/octet-stream";
+
+          const presignRes = await fetch(`${API_BASE}/uploads/presign`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader,
+            },
+            body: JSON.stringify({
+              incidentId,
+              filename: file.name,
+              contentType,
+            }),
+          });
+
+          if (!presignRes.ok) {
+            const errTxt = await presignRes.text();
+            throw new Error("ขอ presigned URL ไม่สำเร็จ: " + errTxt);
+          }
+
+          const { uploadUrl, key } = await presignRes.json();
+
+          const putRes = await fetch(uploadUrl, {
+            method: "PUT",
+            headers: {
+              "Content-Type": contentType,
+            },
+            body: file,
+          });
+
+          if (!putRes.ok) {
+            const t = await putRes.text();
+            throw new Error("อัปโหลดรูปขึ้น S3 ไม่สำเร็จ: " + t);
+          }
+
+          uploadedKey = key;
+          console.log("✅ Uploaded to S3:", uploadedKey);
+        }
+
+        // (2) เรียก POST /reports พร้อมแนบ key ของรูป (ถ้ามี)
+        const payload = {
+          title,
+          location: position,
+          description: desc,
+          detail: desc,
+          category: "ทั่วไป",
+          reportedBy: userEmail || "unknown@dome.tu.ac.th",
+          images: uploadedKey ? [uploadedKey] : [],
+          incidentIdHint: incidentId,
+        };
+
+        const resp = await fetch(`${API_BASE}/reports`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const text = await resp.text();
+        console.log("🔍 /reports Response:", text);
+
+        if (!resp.ok) {
+          alert("❌ ส่งรายงานไม่สำเร็จ: " + text);
+          throw new Error(text);
+        }
+
+        alert("✅ ส่งรายงานสำเร็จ!");
+        popup.classList.remove("active");
+
+        // ล้างฟอร์ม
+        document.getElementById("titleInput").value = "";
+        document.getElementById("positionInput").value = "";
+        document.getElementById("descInput").value = "";
+        if (imageUpload) imageUpload.value = "";
+        if (fileName) {
+          fileName.textContent = "";
+          fileName.classList.remove("show");
+        }
+
+        // refresh feed ให้เห็นรายงานใหม่
+        loadFeed();
+      } catch (err) {
+        console.error("🚨 Error:", err);
+        alert("❌ เกิดข้อผิดพลาด: " + err.message);
+      }
+    });
   }
 });

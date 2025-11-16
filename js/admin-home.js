@@ -1,347 +1,357 @@
+// ===============================
+// admin-home.js (fixed)
+// ===============================
 document.addEventListener("DOMContentLoaded", () => {
-  const adminReportList = document.getElementById("adminReportList");
+  const API_BASE = "https://1pb257oa3g.execute-api.us-east-1.amazonaws.com/prod";
 
-  // Load approved posts (or show placeholder)
-  const approvedPosts = JSON.parse(localStorage.getItem("approvedPosts")) || [];
+  const ENDPOINTS = {
+    feed: () => `${API_BASE}/reports`,
+    update: (id) => `${API_BASE}/admin/incidents/${encodeURIComponent(id)}`,
+    delete: (id) => `${API_BASE}/admin/incidents/${encodeURIComponent(id)}`,
+  };
 
-  if (approvedPosts.length === 0) {
-    adminReportList.innerHTML = '<p style="text-align: center; color: #666; margin-top: 50px;">ยังไม่มีโพสต์ที่อนุมัติ</p>';
-  } else {
-    renderPosts(approvedPosts);
+  const S3_PUBLIC_BASE = "https://tu-emergency-alert-bucket-cp2.s3.amazonaws.com/";
+
+  const rawToken = localStorage.getItem("id_token") || "";
+  const userRole = localStorage.getItem("user_role") || "USER";
+  const userEmail = localStorage.getItem("user_email") || "";
+
+  if (userRole !== "ADMIN") {
+    alert("คุณไม่มีสิทธิ์เข้าถึงหน้านี้");
+    window.location.href = "./index.html";
+    return;
   }
 
-  // Render posts into the list
-  function renderPosts(posts) {
-    adminReportList.innerHTML = '';
-    posts.forEach(post => {
-      const card = document.createElement('article');
-      card.className = 'report-card';
+  const authHeader = rawToken
+    ? { Authorization: rawToken.startsWith("Bearer ") ? rawToken : `Bearer ${rawToken}` }
+    : {};
 
-      // Build inner HTML structure (image left, content right)
-      card.innerHTML = `
-        <div class="report-header">
-          <div class="report-preview">
-            <div class="">
-           ${post.image ? `
-              <div class="preview-image-container">
-                <img src="${post.image}" class="preview-image" alt="report image" />
-              </div>
-            ` : `
-              <div class="preview-image-container" style="background:#e6e6e6;display:flex;align-items:center;justify-content:center;color:#999;">
-                ไม่มีรูป
-              </div>
-            `}
-            </div> 
-        
-            <div class="preview-content">
-              <!-- dropdown for edit ### -->
-              <div class="report-dropdown-edit">
-                <button class="edit-btn" style="display:none;">edit</button>
-                <button class="dropdown-btn">▾</button>
-              </div>
-              <div>
-                <h3 class="report-title">${escapeHtml(post.title || 'ไม่มีหัวข้อ')}</h3>
-                <div class="preview-description"></div>
-              </div>
+  const listEl =
+    document.getElementById("adminFeedList") ||
+    document.getElementById("feedList") ||
+    document.getElementById("incidentList");
 
-              <div class="report-info">
-                <div class="report-meta">
-                  <div class="meta-position">ตำแหน่ง: ${escapeHtml(post.position || '-')}</div>
-                  <div class="meta-time">เวลา: ${escapeHtml(post.date || '-')}</div>
-                </div>
-                 <!-- dropdown สถานะ -->
-                <div class="status-dropdown" style="display:none;">
-                  <button class="status-toggle"><span>▾</span> กําลังดําเนินการ</button>
-                  <div class="status-options">
-                    <div data-status="กำลังดำเนินการ">กำลังดำเนินการ</div>
-                    <hr>
-                    <div data-status="ดำเนินการแก้ไขเหตุแล้ว">ดำเนินการแก้ไขเหตุแล้ว</div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-
-      // ✅ ดึง element ออกมา
-      const dropdownBtn = card.querySelector('.dropdown-btn');
-      const editBtn = card.querySelector('.edit-btn');
-      const statusDropdown = card.querySelector('.status-dropdown');
-      const toggleBtn = card.querySelector('.status-toggle');
-      const optionDivs = card.querySelectorAll('.status-options div');
-
-      // ✅ เมื่อกด drop-down ให้ toggle ปุ่ม edit
-      dropdownBtn.addEventListener('click', () => {
-        editBtn.style.display = (editBtn.style.display === 'none') ? 'inline-block' : 'none';
-      });
-
-      // ✅ เมื่อกด edit ให้ toggle แสดง dropdown สถานะ
-      editBtn.addEventListener('click', () => {
-        statusDropdown.style.display =
-          (statusDropdown.style.display === 'none' || !statusDropdown.style.display)
-            ? 'block'
-            : 'none';
-      });
-
-      // ✅ เมื่อกดเลือกสถานะ
-      optionDivs.forEach(opt => {
-        opt.addEventListener('click', () => {
-          const newStatus = opt.getAttribute('data-status');
-          toggleBtn.textContent = '▾ ' + newStatus;
-          statusDropdown.querySelector('.status-options').style.display = 'none';
-          updateStatus(post, newStatus);
-        });
-      });
-
-      // ✅ toggle เปิด/ปิด รายการใน dropdown สถานะ
-      toggleBtn.addEventListener('click', () => {
-        const options = statusDropdown.querySelector('.status-options');
-        options.style.display = (options.style.display === 'block') ? 'none' : 'block';
-      });
-
-
-      // Attach truncation behavior
-      const descEl = card.querySelector('[data-fulltext]');
-      const btn = card.querySelector('.see-more-btn');
-      applyTruncation(descEl, btn);
-
-      adminReportList.appendChild(card);
-    });
-  }
-
-  // --- Helpers ---
-  function statusClass(raw) {
-    if (!raw) return 'pending';
-    const s = String(raw).toLowerCase();
-    if (s.includes('pending') || s.includes('อยู่') || s.includes('ตรวจ')) return 'pending';
-    if (s.includes('approved') || s.includes('approve') || s.includes('อนุมัติ')) return 'approved';
-    if (s.includes('done') || s.includes('complete') || s.includes('เสร็จ')) return 'done';
-    if (s.includes('reject') || s.includes('ไม่อนุมัติ') || s.includes('ปฏิเสธ')) return 'rejected';
-    return s; // fallback
-  }
-
-  function statusLabel(raw) {
-    if (!raw) return 'อยู่ระหว่างดำเนินการ';
-    const s = String(raw).toLowerCase();
-    if (s.includes('pending') || s.includes('อยู่') || s.includes('ตรวจ')) return 'อยู่ระหว่างดำเนินการ';
-    if (s.includes('approved') || s.includes('approve') || s.includes('อนุมัติ')) return 'อนุมัติ';
-    if (s.includes('done') || s.includes('complete') || s.includes('เสร็จ')) return 'ดำเนินการเสร็จสิ้น';
-    if (s.includes('reject') || s.includes('ไม่อนุมัติ') || s.includes('ปฏิเสธ')) return 'ปฏิเสธ';
-    // If already Thai or unknown, return original (trimmed)
-    return String(raw).length > 20 ? String(raw).slice(0, 20) + '...' : String(raw);
-  }
-
-  // Toggle truncation: if text is long, show truncated + button
-  function applyTruncation(descEl, btn) {
-    if (!descEl) return;
-    const full = descEl.textContent || '';
-    const threshold = 220; // characters to trigger truncation (shorter for tighter layout)
-
-    // Use plain text and preserve newlines via CSS (pre-line)
-    if (full.length <= threshold) {
-      btn.style.display = 'none';
-      return;
-    }
-
-    // initialize truncated state
-    descEl.classList.add('truncated');
-    btn.textContent = 'ดูเพิ่มเติม';
-    btn.setAttribute('aria-expanded', 'false');
-    btn.classList.add('see-more-btn');
-
-    btn.addEventListener('click', (e) => {
-      const expanded = btn.getAttribute('aria-expanded') === 'true';
-      if (expanded) {
-        descEl.classList.add('truncated');
-        btn.textContent = 'ดูเพิ่มเติม';
-        btn.setAttribute('aria-expanded', 'false');
-      } else {
-        descEl.classList.remove('truncated');
-        btn.textContent = 'ดูน้อยลง';
-        btn.setAttribute('aria-expanded', 'true');
-      }
-    });
-  }
-
-  // basic HTML escape to avoid injecting markup
-  function escapeHtml(str) {
-    if (!str) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/\"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
-
-});
-// คอมเมนต์: เพิ่ม logic สำหรับปุ่มชี้ลง -> แสดงปุ่ม edit -> แสดง action panel
-document.addEventListener("DOMContentLoaded", () => {
-  const statusList = document.getElementById("statusList");
   const searchInput = document.getElementById("searchInput");
-  const reportTpl = document.getElementById("report-template");
-  const placeholderTpl = document.getElementById("placeholder-template");
 
-  // โหลด pending จาก localStorage
-  function loadPendingReports() {
-    try { return JSON.parse(localStorage.getItem("pendingReports")) || []; }
-    catch (e) { return []; }
+  let incidents = [];
+  let filtered = [];
+
+  function statusLabelThai(status) {
+    const s = (status || "").toLowerCase();
+    if (s === "approved") return "กำลังดำเนินการแก้ไข";
+    if (s === "finish") return "ดำเนินการเเก้ไขเสร็จสิ้น";
+    return status || "-";
   }
 
-  function savePendingReports(list) {
-    localStorage.setItem("pendingReports", JSON.stringify(list));
+  // (ยังมีอยู่ แต่ไม่ได้ใช้ก็ไม่เป็นไร)
+  function fmtDateTime(iso) {
+    if (!iso) return "-";
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "-";
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(
+      d.getHours()
+    )}:${pad(d.getMinutes())}`;
   }
 
-  // คืนข้อความสถานะ (ไทย)
-  function getStatusText(report) {
-    return report.statusText || "อยู่ระหว่างตรวจสอบ";
+  // ✅ แก้ formatTime ให้แสดง เวลา + วันที่ + พ.ศ.
+  function formatTime(iso) {
+    if (!iso) return "-";
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "-";
+    const pad = (n) => String(n).padStart(2, "0");
+    const hours = pad(d.getHours());
+    const mins  = pad(d.getMinutes());
+    const day   = pad(d.getDate());
+    const month = pad(d.getMonth() + 1);
+    const yearBE = d.getFullYear() + 543;
+    return `${hours}:${mins} ${day}/${month}/${yearBE}`;
   }
 
-  // แสดงรายการโดย clone template (ไม่แสดง description)
-  function displayPendingReports(filter = "") {
-    const pending = loadPendingReports();
-    const q = (filter || "").toLowerCase();
-    const filtered = pending.filter(r => {
-      if (!q) return true;
-      return (r.title || "").toLowerCase().includes(q) ||
-        (r.position || "").toLowerCase().includes(q);
-    });
+  function s3UrlFromKey(key) {
+    if (!key) return null;
+    if (/^https?:\/\//i.test(key)) return key;
+    return S3_PUBLIC_BASE + key.replace(/^\/+/, "");
+  }
 
-    statusList.innerHTML = "";
-
-    if (filtered.length === 0) {
-      const ph = placeholderTpl.content.cloneNode(true);
-      statusList.appendChild(ph);
-      return;
-    }
-
-    filtered.forEach((report, idx) => {
-      const node = reportTpl.content.cloneNode(true);
-      const article = node.querySelector("article.status-card");
-
-      // เติมฟิลด์
-      const setText = (sel, value) => {
-        const el = node.querySelector(sel);
-        if (el) el.textContent = value ?? "";
-      };
-      setText("[data-field='title']", report.title || "ไม่มีหัวข้อ");
-      setText("[data-field='position']", report.position || "-");
-      setText("[data-field='time']", (report.time || "") + (report.date ? " " + report.date : ""));
-
-      // attributes
-      if (article) {
-        article.dataset.id = report.id;
-        article.dataset.index = idx;
-        article.setAttribute("aria-expanded", "false");
+  async function loadAdminFeed() {
+    try {
+      const url = ENDPOINTS.feed();
+      const res = await fetch(url, {
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader,
+        },
+      });
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || "โหลดรายงานไม่สำเร็จ");
       }
+      const data = await res.json();
+      const items = data.items || [];
 
-      // controls
-      const toggleBtn = node.querySelector(".toggle-actions");
-      const editBtn = node.querySelector(".edit-btn");
-      const actionPanel = node.querySelector(".action-panel");
+      incidents = items.map((it) => {
+        const rawImgs = it.images || [];
+        const images = (Array.isArray(rawImgs) ? rawImgs : [])
+          .map((v) => (typeof v === "string" ? v : v && v.S ? v.S : null))
+          .filter(Boolean);
 
-      // toggle ปุ่ม edit (show/hide) เมื่อกดปุ่มชี้ลง
-      if (toggleBtn) {
-        toggleBtn.addEventListener("click", (ev) => {
-          ev.stopPropagation();
-          if (editBtn) {
-            const isHidden = editBtn.hasAttribute("hidden");
-            if (isHidden) editBtn.removeAttribute("hidden");
-            else editBtn.setAttribute("hidden", "");
-          }
-          // ซ่อน/แสดง panel ถ้ามันเปิดอยู่
-          if (actionPanel) {
-            if (!actionPanel.hasAttribute("hidden")) actionPanel.setAttribute("hidden", "");
-          }
-        });
-      }
-
-      // กด edit -> โชว์ action panel
-      if (editBtn) {
-        editBtn.addEventListener("click", (ev) => {
-          ev.stopPropagation();
-          if (actionPanel) {
-            const isHidden = actionPanel.hasAttribute("hidden");
-            if (isHidden) actionPanel.removeAttribute("hidden");
-            else actionPanel.setAttribute("hidden", "");
-          }
-        });
-      }
-
-      // ตัวเลือก action ใน panel: inprogress / done
-      const optionButtons = node.querySelectorAll(".action-option");
-      optionButtons.forEach(btn => {
-        btn.addEventListener("click", (ev) => {
-          ev.stopPropagation();
-          const action = btn.getAttribute("data-action");
-          if (!action) return;
-          // เรียกอัพเดทสถานะ
-          updateReportStatus(report.id, action);
-        });
+        return {
+          id: it.id || it.incidentId || it.reportId,
+          title: it.title || "ไม่ระบุหัวข้อ",
+          location: it.location || "-",
+          description: it.description || it.detail || it.details || "-",
+          status: it.status,
+          reportedAt: it.reportedAt || it.createdAt || null,
+          images,
+          reportedBy: it.reportedBy || "-",
+          category: it.category || "-",
+        };
       });
 
-      // คลิกที่ article: ขยาย/ยุบ (ไม่กระทบ controls)
-      if (article) {
-        article.addEventListener("click", () => {
-          const expanded = article.classList.toggle("expanded");
-          article.setAttribute("aria-expanded", expanded ? "true" : "false");
-        });
+      incidents.sort((a, b) => {
+        const ta = a.reportedAt || "";
+        const tb = b.reportedAt || "";
+        if (!ta && !tb) return 0;
+        if (!ta) return 1;
+        if (!tb) return -1;
+        return ta < tb ? 1 : -1;
+      });
+
+      filtered = incidents.slice();
+      renderList();
+    } catch (err) {
+      console.error(err);
+      if (listEl) {
+        listEl.innerHTML = `<p style="padding: 12px; color:#b00;">โหลดข้อมูลไม่สำเร็จ: ${err.message}</p>`;
+      }
+    }
+  }
+
+  function renderList() {
+  	if (!listEl) return;
+  	listEl.innerHTML = "";
+
+  	if (!filtered.length) {
+  		listEl.innerHTML =
+  		`<p style="text-align:center; margin-top:24px; color:#666;">ยังไม่มีเหตุที่อนุมัติแล้ว/เสร็จสิ้น</p>`;
+  		return;
+  	}
+
+  	filtered.forEach((inc) => {
+  		const card = document.createElement("article");
+  		card.className = "feed-card"; 
+
+  		const imgUrl =
+  		inc.images && inc.images.length ? s3UrlFromKey(inc.images[0]) : null;
+  		
+  		const timeText = formatTime(inc.reportedAt || inc.createdAt); 
+  		
+  		const title = escapeHtml(inc.title);
+  		const location = escapeHtml(inc.location);
+  		const desc = escapeHtml(inc.description);
+  		const descShort =
+  		desc.length > 70 ? desc.substring(0, 70).trim() + "…" : desc;
+  		
+  		const statusLower = (inc.status || "").toLowerCase();
+  		const statusClass = (statusLower === 'finish' || statusLower === 'done') ? 'status-finished' : '';
+  		const statusText = statusLabelThai(inc.status);
+
+  		card.innerHTML = `
+  		<div class="feed-body">
+  			${
+  			imgUrl 
+  			? `
+  			<div class="feed-image-wrap">
+  			<img src="${imgUrl}" class="feed-image"
+  					alt="incident image"
+  					onerror="this.parentElement.style.display='none';" />
+  			</div>
+  			`
+  			: ""
+  			}
+
+  			<div class="feed-text-wrap">
+  			<div class="feed-header">
+  				<h3 class="feed-title">${title}</h3>
+  				<button class="feed-toggle-btn" aria-label="ดูรายละเอียด">▾</button>
+  			</div>
+
+  			<div class="feed-meta">
+  				<span>📍 ${location}</span>
+  				<span>🕒 ${timeText}</span>
+  			</div>
+
+  			<span class="feed-status-chip ${statusClass}">${statusText}</span>
+
+  			<div class="feed-extra" style="display:none;">
+  				<p><strong>รายละเอียดเต็ม:</strong> ${desc}</p>
+  				<p><strong>สถานะ:</strong> ${statusText} (${inc.status})</p>
+  				<p><strong>ผู้รายงาน:</strong> ${escapeHtml(inc.reportedBy)}</p>
+
+  				<div class="feed-actions">
+  				<button class="feed-edit-btn">แก้ไข</button>
+  				<button class="feed-delete-btn">ลบ</button>
+  				</div>
+  			</div>
+  			</div>
+  		</div>
+  		`;
+
+  		const extra = card.querySelector(".feed-extra");
+  		const toggleBtn = card.querySelector(".feed-toggle-btn");
+  		const statusChip = card.querySelector(".feed-status-chip");
+  		const descShortEl = card.querySelector(".feed-desc-short"); 
+
+  		toggleBtn.addEventListener("click", () => {
+  		const showing = extra.style.display === "block";
+
+  		if (showing) {
+  			extra.style.display = "none";
+  			toggleBtn.textContent = "▾";
+  			if (statusChip) statusChip.style.display = "inline-block";
+  			if (descShortEl) descShortEl.style.display = "block"; 
+  		} else {
+  			extra.style.display = "block";
+  			toggleBtn.textContent = "▴";
+  			if (statusChip) statusChip.style.display = "none";
+  			if (descShortEl) descShortEl.style.display = "none"; 
+  		}
+  		});
+  		
+  		const editBtn = card.querySelector(".feed-edit-btn");
+  		editBtn.addEventListener("click", async () => {
+  		await handleEditIncident(inc);
+  		});
+
+  		const deleteBtn = card.querySelector(".feed-delete-btn");
+  		deleteBtn.addEventListener("click", async () => {
+  		await handleDeleteIncident(inc);
+  		});
+
+  		listEl.appendChild(card);
+  	});
+  }
+
+  async function handleEditIncident(inc) {
+    try {
+      const newTitle = window.prompt("แก้ไขหัวข้อ", inc.title);
+      if (newTitle === null) return;
+
+      const newLocation = window.prompt("แก้ไขสถานที่", inc.location);
+      if (newLocation === null) return;
+
+      const newDesc = window.prompt("แก้ไขรายละเอียด", inc.description);
+      if (newDesc === null) return;
+
+      const baseStatus = (inc.status || "approved").toLowerCase();
+      const defaultStatus = baseStatus === "approved" ? "finish" : baseStatus;
+
+      const newStatus = window.prompt(
+        "สถานะ (approved = กำลังดำเนินการแก้ไข, finish = ดำเนินการเเก้ไขเสร็จสิ้น)",
+        defaultStatus
+      );
+      if (newStatus === null) return;
+
+      const s = newStatus.trim().toLowerCase();
+      if (s !== "approved" && s !== "finish") {
+        alert("สถานะต้องเป็น approved หรือ finish เท่านั้น");
+        return;
       }
 
-      statusList.appendChild(node);
+      await updateIncident(inc.id, {
+        title: newTitle.trim() || inc.title,
+        location: newLocation.trim() || inc.location,
+        description: newDesc.trim() || inc.description,
+        status: s,
+      });
+
+      inc.title = newTitle.trim() || inc.title;
+      inc.location = newLocation.trim() || inc.location;
+      inc.description = newDesc.trim() || inc.description;
+      inc.status = s;
+
+      renderList();
+      alert("✅ แก้ไขรายงานสำเร็จ");
+    } catch (err) {
+      console.error(err);
+      alert("❌ แก้ไขไม่สำเร็จ: " + err.message);
+    }
+  }
+
+  async function updateIncident(id, changes) {
+    console.log("PUT", ENDPOINTS.update(id), changes);
+    const res = await fetch(ENDPOINTS.update(id), {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader,
+      },
+      body: JSON.stringify({
+        ...changes,
+        admin: userEmail || "admin",
+      }),
+    });
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error(txt || "อัปเดต incident ไม่สำเร็จ");
+    }
+  }
+
+  async function handleDeleteIncident(inc) {
+    const sure = window.confirm(
+      `ต้องการลบเหตุ "${inc.title}" จริงหรือไม่?\n\nข้อมูลจะถูกลบออกจากระบบทั้งหมด (รวมรูปใน S3)`
+    );
+    if (!sure) return;
+
+    try {
+      console.log("DELETE", ENDPOINTS.delete(inc.id));
+      const res = await fetch(ENDPOINTS.delete(inc.id), {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader,
+        },
+        body: JSON.stringify({ admin: userEmail || "admin" }),
+      });
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || "ลบ incident ไม่สำเร็จ");
+      }
+
+      incidents = incidents.filter((x) => x.id !== inc.id);
+      filtered = filtered.filter((x) => x.id !== inc.id);
+      renderList();
+      alert("✅ ลบเหตุเรียบร้อยแล้ว");
+    } catch (err) {
+      console.error(err);
+      alert("❌ ลบไม่สำเร็จ: " + err.message);
+    }
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      const q = searchInput.value.trim().toLowerCase();
+      filtered = !q
+        ? incidents.slice()
+        : incidents.filter((r) =>
+            (r.title || "").toLowerCase().includes(q) ||
+            (r.location || "").toLowerCase().includes(q) ||
+            (r.description || "").toLowerCase().includes(q) ||
+            (r.status || "").toLowerCase().includes(q) ||
+            (r.reportedBy || "").toLowerCase().includes(q)
+          );
+      renderList();
     });
   }
 
-  // อัพเดทสถานะ: 'inprogress' จะอัพเดทสถานะใน pending (ไม่ย้าย),
-  // 'done' จะย้ายไป approvedPosts, 'approve' (ถ้ามี) จะย้ายเช่นกัน
-  function updateReportStatus(reportId, action) {
-    const pending = loadPendingReports();
-    const idx = pending.findIndex(r => String(r.id) === String(reportId));
-    if (idx === -1) return;
-
-    const report = pending[idx];
-    let newStatus = "";
-    let newStatusText = "";
-
-    if (action === "inprogress") { newStatus = "InProgress"; newStatusText = "กำลังดำเนินการ"; }
-    else if (action === "done") { newStatus = "Done"; newStatusText = "ดำเนินการแก้ไขเหตุแล้ว"; }
-    else if (action === "approve") { newStatus = "Approved"; newStatusText = "อนุมัติ"; }
-    else if (action === "reject") { newStatus = "Rejected"; newStatusText = "ไม่อนุมัติ"; }
-    else return;
-
-    // ถ้าเป็น inprogress: อัพเดทใน pending แล้วบันทึก (ยังคงอยู่ใน pending)
-    if (action === "inprogress") {
-      pending[idx] = { ...report, status: newStatus, statusText: newStatusText };
-      savePendingReports(pending);
-      displayPendingReports(searchInput ? searchInput.value.trim() : "");
-      return;
-    }
-
-    // ถ้าเป็น done/approve: อัพเดท userReports, ย้ายไป approvedPosts แล้วลบจาก pending
-    const userReports = JSON.parse(localStorage.getItem("userReports")) || [];
-    const updatedUserReports = userReports.map(r => r.id === report.id ? { ...r, status: newStatus, statusText: newStatusText } : r);
-    localStorage.setItem("userReports", JSON.stringify(updatedUserReports));
-
-    if (newStatus === "Approved" || newStatus === "Done") {
-      const approved = JSON.parse(localStorage.getItem("approvedPosts")) || [];
-      approved.push({ ...report, status: newStatus, statusText: newStatusText });
-      localStorage.setItem("approvedPosts", JSON.stringify(approved));
-    }
-
-    // ลบจาก pending และบันทึก
-    pending.splice(idx, 1);
-    savePendingReports(pending);
-
-    displayPendingReports(searchInput ? searchInput.value.trim() : "");
+  function escapeHtml(str) {
+    return String(str || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
   }
 
-  // search realtime
-  if (searchInput) {
-    searchInput.addEventListener("input", () => displayPendingReports(searchInput.value.trim()));
-  }
-
-  // เรียกแสดงครั้งแรก
-  displayPendingReports();
+  loadAdminFeed();
 });

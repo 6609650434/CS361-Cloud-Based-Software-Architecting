@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TU Emergency Alert</title>
+
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/adminHome.css" />
   </head>
-  
+
   <body>
     <header>
       <h1>REPORT</h1>
@@ -26,8 +27,8 @@
             class="menu-avatar"
             alt="avatar"
           />
-
-          <a href="../html/index.html" class="logout-link"> Logout </a>
+          <div id="profileEmail"></div>
+          <a href="index.html" class="logout-link"> Logout </a>
         </div>
       </div>
 
@@ -36,24 +37,24 @@
 
     <nav class="navbar">
       <div class="nav-links">
+        <!-- แก้ให้เป็นหน้า Admin -->
         <a href="admin-home.html" class="nav-btn active">HOME</a>
         <a href="admin-status.html" class="nav-btn">STATUS</a>
       </div>
     </nav>
 
     <main>
-      <h2>All User Reports</h2>
-      <div id="adminReportList" class="report-list"></div>
+      <section class="feed-section">
+        <h2 class="feed-title-page">
+
+        </h2>
+
+        <!-- admin-home.js จะเติมการ์ดลงใน #feedList -->
+        <section id="feedList" class="feed-list" aria-live="polite"></section>
+      </section>
     </main>
 
-    <script src="../script/admin-home.js"></script>
+    <script src="../js/admin-home.js"></script>
   </body>
+</html>
 
-  <div class="report-card">
-  <div class="report-header">
-    <!-- ปุ่ม controls มุมขวาบน -->
-    <div class="card-controls">
-      <button class="edit-btn">edit</button>
-      <button class="toggle-actions">▾</button>
-    </div>
-    

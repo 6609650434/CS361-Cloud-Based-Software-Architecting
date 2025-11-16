@@ -1,302 +1,293 @@
-/* Main Content Layout */
+/* ------- layout หลักของ feed ในหน้า user-home ------- */
+
 main {
-  max-width: 1000px;
-  margin: 20px auto;
-  padding: 0 20px;
+  max-width: 1024px;
+  margin: 0 auto 80px;    /* ทำให้เนื้อหาอยู่กลางจอแนวนอน */
+  padding: 0 20px 40px;
 }
 
-/* Report List */
-.report-list {
+.feed-section {
+  margin-top: 16px;
+}
+
+.feed-title-page {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 10px 0 20px;
+}
+
+/* list การ์ด */
+.feed-list {
   display: flex;
   flex-direction: column;
-  gap: 32px;
-  padding: 8px 0;
+  gap: 16px;
 }
 
-/* Report Card Styles */
-.report-card {
-  background: #F0F0F0;
-  border-radius: 12px;
-  overflow: visible;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  margin-bottom: 20px;
-  width: 100%;
+/* กล่องการ์ดแต่ละอัน */
+.feed-card {
+  background: #fff7f5;
+  border-radius: 20px;
+  padding: 18px 24px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
 }
 
-.report-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.report-header {
+/* เนื้อในของการ์ด: รูปซ้าย ข้อความขวา */
+.feed-body {
   display: flex;
-  gap: 24px;
-  padding: 20px;
-  background: #F0F0F0;
-  transition: background-color 0.3s ease;
-}
-
-.report-preview {
-  /* border: 1px solid seagreen; */
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
-  width: 100%;
+  flex-direction: row;
+  gap: 20px;
   align-items: center;
 }
 
-.preview-image-container {
-  margin: auto;
-  width: 300px;
-  height: 200px;
-  border-radius: 8px;
-  overflow: hidden;
-  flex-shrink: 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+/* รูปด้านซ้ายให้ขนาดคงที่ */
+.feed-image-wrap {
+  flex: 0 0 260px;
+  max-width: 260px;
 }
 
-.preview-image {
+.feed-image {
   width: 100%;
-  height: 100%;
+  height: 150px;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  border-radius: 14px;
 }
 
-.preview-content {
-  /* background: #000; */
+/* ข้อความด้านขวา */
+.feed-text-wrap {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 6px;
 }
 
-.report-dropdown-edit {
+/* บรรทัดบนสุด: ชื่อ + ปุ่มลูกศร */
+.feed-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.feed-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.feed-toggle-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* แถวรายละเอียดสั้น ๆ: location + time */
+.feed-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* ป้ายสถานะแบบปุ่มเหลืองยาว */
+.feed-status-chip {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 6px 24px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: #ffc928;
+  color: #000;
+}
+
+.feed-status-chip.status-finished { 
+  background: #28a745; /* สีเขียว */
+  color:#000         /* สีตัวอักษรขาว */
+}
+
+/* ข้อความสรุปสั้น */
+.feed-desc-short {
+  margin-top: 10px;
+  font-size: 0.95rem;
+  color: #444;
+}
+
+/* รายละเอียดเต็ม (แสดงเมื่อกดลูกศร) */
+.feed-extra {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: 0.9rem;
+}
+
+/* ------------------------------
+   ปุ่ม + ลอยมุมขวาล่าง
+------------------------------- */
+
+.add-btn {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background-color: #e53935;
+  color: white;
+  font-size: 32px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ------------------------------
+   Popup ฟอร์ม Report (กลางจอ)
+------------------------------- */
+
+.popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.popup.active {
+  display: flex;
+}
+
+.popup-content {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px 22px;
+  width: 90%;
+  max-width: 420px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.popup-content h3 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.popup-content label {
+  display: block;
+  margin: 8px 0 4px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.popup-content input,
+.popup-content textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.popup-content textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* upload block */
+.upload-section {
+  text-align: left;
+  margin: 15px 0;
+}
+
+.upload-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #f3f3f3;
+  border: 2px dashed #ccc;
+  border-radius: 10px;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.upload-label:hover {
+  background: #f0e0e0;
+  border-color: #e53935;
+}
+
+.upload-label img {
+  width: 30px;
+  height: 30px;
+}
+
+.upload-label span {
+  font-weight: bold;
+  color: #666;
+}
+
+#imageUpload {
+  display: none;
+}
+
+.file-name {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+/* ปุ่มใน popup */
+.popup-buttons {
+  margin-top: 15px;
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
-
-  button {
-    border: none;
-  }
-
+  gap: 10px;
 }
 
-.edit-btn {
-  background: #1877F2;
-  color: white;
-  border-radius: 14px;
-  padding: 0px 24px;
-}
-
-.report-title {
-  font-size: 22px;
-  font-weight: bold;
-  margin-bottom: 16px;
-  color: #222;
-  line-height: 1.3;
-}
-
-.preview-description {
-  position: relative;
-  margin: 12px 0 16px;
-}
-
-.description-text {
-  line-height: 1.5;
-  color: #444;
-  font-size: 15px;
-  margin-bottom: 4px;
-  white-space: pre-line;
-}
-
-.description-text.truncated {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.see-more-btn {
-  background: none;
+.post-btn,
+.cancel-btn {
   border: none;
-  color: #1877F2;
-  font-weight: 500;
-  padding: 4px 0;
+  border-radius: 10px;
+  padding: 8px 18px;
   cursor: pointer;
-  font-size: 14px;
-  margin-top: 4px;
-}
-
-.see-more-btn:hover {
-  text-decoration: underline;
-}
-
-.report-info {
-  display: flex;
-  flex-direction: column;
-  /* background: #000; */
-  color: #666;
-  font-size: 14px;
-  margin-top: 16px;
-  position: relative;
-}
-
-.report-meta {
-  display: flex;
-  flex-direction: column;
-  color: #555;
-  font-weight: 500;
-  margin-bottom: 12px;
-}
-
-.status-dropdown {
-  position: relative;
-  margin-top: 8px;
-}
-
-.status-toggle {
-  width: 100%;
-  padding: 6px 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background: #f5f5f5;
-  text-align: left;
-  cursor: pointer;
-}
-
-.status-options {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-  z-index: 0;
-}
-
-.status-options div {
-  padding: 8px 10px;
-  cursor: pointer;
-}
-
-.status-options div:hover {
-  background-color: #f0f0f0;
-}
-
-.status-options hr {
-  margin: 4px 0;
-  border: none;
-  border-top: 1px solid #eee;
-}
-
-/* Status styles */
-.status-value {
-  padding: 8px 16px;
-  border-radius: 20px;
   font-weight: 600;
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
-.status-value.pending {
-  background: #fff3e0;
-  color: #ffae00;
+.post-btn {
+  background: #e53935;
+  color: white;
 }
 
-.status-value.approved {
-  background: #e8f5e9;
-  color: #00be00;
+.cancel-btn {
+  background: #ccc;
+  color: #000;
 }
 
-.status-value.rejected {
-  background: #ffebee;
-  color: #ff3b30;
-}
+/* ------------------------------
+   Responsive
+------------------------------- */
 
-.status-value.done {
-  background: #98FB98;
-  color: #009e00;
-}
-
-/* Admin actions */
-.admin-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.admin-actions button {
-  padding: 8px 24px;
-  border-radius: 14px;
-  border: 1px solid transparent;
-  background: #fff;
-  cursor: pointer;
-  font-weight: 700;
-  transition: all 0.14s ease;
-}
-
-.approve-btn {
-  color: #FFAE00;
-  border-color: #FFAE00;
-}
-
-.approve-btn:hover {
-  background: #FFAE00;
-  color: #fff;
-}
-
-.done-btn {
-  color: #00BE00;
-  border-color: #00BE00;
-}
-
-.done-btn:hover {
-  background: #00BE00;
-  color: #fff;
-}
-
-.reject-btn {
-  color: #FF3B30;
-  border-color: #FF3B30;
-}
-
-.reject-btn:hover {
-  background: #FF3B30;
-  color: #fff;
-}
-
-/* Responsive */
 @media (max-width: 768px) {
-  .preview-image-container {
-    width: 220px;
-    height: 150px;
-  }
-
-  .report-title {
-    font-size: 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  .report-preview {
+  .feed-body {
     flex-direction: column;
+    align-items: stretch;
   }
 
-  .preview-image-container {
-    width: 100%;
-    height: 180px;
+  .feed-image-wrap {
+    flex: 1 1 auto;
+    max-width: 100%;
   }
 
-  .admin-actions {
-    flex-direction: column;
-  }
-
-  .admin-actions button {
-    width: 100%;
+  .feed-image {
+    height: 200px;
   }
 }

@@ -75,6 +75,74 @@ header h1 {
     z-index: 10;
 }
 
+.feed-extra p {
+  overflow-wrap: break-word;
+  word-break: break-all;
+}
+
+/* จัดการ Header */
+.feed-header {
+  position: relative; /* ทำให้ปุ่ม toggle ลอยอ้างอิงกับ header */
+  /* ถ้าคุณใช้ flex อยู่แล้ว อาจจะต้องปรับแต่งเล็กน้อย */
+}
+
+/* ทำให้ปุ่ม Toggle ลอยไปมุมขวาบน */
+.feed-toggle-btn {
+  position: absolute;
+  top: 10px; /* ปรับระยะห่างจากขอบบน */
+  right: 10px; /* ปรับระยะห่างจากขอบขวา */
+
+  /* ทำให้ปุ่มโปร่งใส */
+  background: none;
+  border: none;
+  font-size: 1.5rem; /* ขนาดไอคอน ▾/▴ */
+  color: #555;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.feed-toggle-btn:hover {
+  color: #000;
+}
+
+
+/* จัดปุ่ม Edit / Delete ให้อยู่ชิดขวา */
+.feed-actions {
+  display: flex;
+  justify-content: flex-end; /* ดันปุ่มไปชิดขวา */
+  gap: 10px; /* เว้นวรรคระหว่างปุ่ม */
+  margin-top: 15px; /* เว้นระยะจากข้อความรายละเอียด */
+}
+
+/* สไตล์ปุ่ม Edit (สีฟ้า) */
+.feed-edit-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.feed-edit-btn:hover {
+  background-color: #0056b3;
+}
+
+/* สไตล์ปุ่ม Delete (สีแดง) */
+.feed-delete-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.feed-delete-btn:hover {
+  background-color: #c82333;
+}
+
 .profile-menu.active {
     display: block;
 }
@@ -84,6 +152,22 @@ header h1 {
     height: 50px;
     border-radius: 50%;
     margin-bottom: 10px;
+}
+
+#profileEmail {
+    /* 3 บรรทัดสำคัญสำหรับทำ ... */
+    white-space: nowrap;      /* บังคับให้ข้อความอยู่บรรทัดเดียว */
+    overflow: hidden;         /* ซ่อนส่วนที่ล้นออกมา */
+    text-overflow: ellipsis;  /* แสดง ... ตรงที่ล้น */
+    font-size: 15px;
+    text-align: center;
+
+    /* * หมายเหตุ: วิธีนี้จะได้ผลดีที่สุด
+     * ถ้าหาก "กรอบ" ที่ครอบมันอยู่ (parent element)
+     * มีการกำหนดความกว้าง (width) หรือ ความกว้างสูงสุด (max-width) ไว้แล้ว
+     * ถ้ามันยังล้นอยู่ ลองเพิ่ม max-width ดูครับ
+     */
+    max-width: 150px; /* <-- ลองปรับตัวเลขนี้ดู (หรือลบออกก็ได้ถ้าไม่จำเป็น) */
 }
 
 .profile-menu .email {
@@ -255,32 +339,4 @@ header h1 {
         padding: 12px 40px;
         font-size: 1.1rem;
     }
-}
-
-.reportPopup { /* หรือ #reportPopup */
-  /* ซ่อนไว้ก่อนเป็นค่าเริ่มต้น */
-  display: none; 
-  opacity: 0;
-  transition: opacity 0.3s ease; /* เพิ่ม animation เล็กน้อย */
-
-  /* --- ส่วนกำหนดตำแหน่ง --- */
-  position: fixed; /* ยึดตำแหน่งกับหน้าจอ */
-  top: 100px;      /* ระยะห่างจากขอบบน (ปรับค่าตามชอบ) */
-  right: 50px;     /* ระยะห่างจากขอบขวา (ปรับค่าตามชอบ) */
-  /* --- จบส่วนกำหนดตำแหน่ง --- */
-
-  /* (ใส่สไตล์อื่นๆ ของ popup ของคุณ เช่น width, background, padding) */
-  width: 350px; /* ตัวอย่าง */
-  background-color: white;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  z-index: 1000; /* ทำให้อยู่เหนือสุด */
-}
-
-.reportPopup.active {
-  /* เมื่อ JS เพิ่ม class 'active' ให้แสดง popup */
-  display: block; 
-  opacity: 1;
 }
